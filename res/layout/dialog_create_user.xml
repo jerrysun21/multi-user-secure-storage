@@ -21,4 +21,21 @@
         android:layout_height="wrap_content"
         android:layout_width="wrap_content"
         android:hint="Password"/>
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <Button
+            android:id="@+id/cuOK"
+            android:layout_width="0px"
+            android:layout_weight="0.5"
+            android:layout_height="wrap_content"
+            android:text="OK" />
+        <Button
+            android:id="@+id/cuCancel"
+            android:layout_weight="0.5"
+            android:layout_width="0px"
+            android:layout_height="wrap_content"
+            android:text="Cancel" />
+    </LinearLayout>
 </LinearLayout>

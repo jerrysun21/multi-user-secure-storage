@@ -3,6 +3,8 @@ package jerrysun21.nujnah.multi;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -11,13 +13,16 @@ import java.util.ArrayList;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.os.Environment;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
@@ -51,7 +56,7 @@ public class MultiUserSecureStorageActivity extends Activity {
         	// Check if application directory exists
         	File appDir = getFile(strAppDir, sd.listFiles());
         	if (appDir == null) {
-        		// This folder not showing up on explorer
+        		// This folder not showing up on explorer (windows)
         		appDir = new File(sd.getAbsolutePath(), strAppDir);
         		appDir.mkdir();
         	}
@@ -108,32 +113,36 @@ public class MultiUserSecureStorageActivity extends Activity {
     }
     
     private void createUserDialog(Activity activity, final File appDir) {
-    	AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+    	final Dialog dialog = new Dialog(activity);
+    	dialog.setContentView(R.layout.dialog_create_user);
     	
-    	LayoutInflater inflater = activity.getLayoutInflater();
-    	View dialogLayout = inflater.inflate(R.layout.dialog_create_user, null);
-    	final EditText usernameEdit = (EditText)dialogLayout.findViewById(R.id.create_user_user_name);
-    	// handle password later
+    	final EditText usernameEdit = (EditText)dialog.findViewById(R.id.create_user_user_name);
+    	final EditText passwordEdit = (EditText)dialog.findViewById(R.id.create_user_password);
     	
-    	builder.setView(inflater.inflate(R.layout.dialog_create_user, null))
-    		.setPositiveButton("Create", new DialogInterface.OnClickListener() {
-				
-				@Override
-				public void onClick(DialogInterface dialog, int which) {
-					String username = usernameEdit.getText().toString();
-					users.add(username);
-					createUser(username, appDir);
-				}
-			})
-			.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-				
-				@Override
-				public void onClick(DialogInterface dialog, int which) {
-					// Don't know what else to do but cancel
-					dialog.cancel();
-				}
-			});
-    	builder.create().show();
+    	Button okButton = (Button)dialog.findViewById(R.id.cuOK);
+    	Button cancelButton = (Button)dialog.findViewById(R.id.cuCancel);
+    	
+    	okButton.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				// Handle password later
+				String username = usernameEdit.getText().toString();
+				users.add(username);
+				createUser(username, appDir);
+				dialog.dismiss();
+			}
+		});
+    	
+    	cancelButton.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				dialog.dismiss();
+			}
+		});
+    	dialog.show();
+    	
     }
     
     // Appends username to file & creates a folder for the user
@@ -152,6 +161,8 @@ public class MultiUserSecureStorageActivity extends Activity {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		
+
     }
     /*
    		lv = (ListView)findViewById(R.id.tag_list);
