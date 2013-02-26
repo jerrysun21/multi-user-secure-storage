@@ -121,6 +121,7 @@ public class MultiUserSecureStorageActivity extends Activity {
     		BufferedReader reader = new BufferedReader(new InputStreamReader(fin));
     		while ((line = reader.readLine()) != null) {
     			String[] temp;
+    			// Split the line by '-' and create a temporary user
     			temp = line.split("-");
     			MultiUserInfo tempUser = new MultiUserInfo(temp[0], temp[1], temp[2]);
     			list.add(tempUser);
@@ -134,6 +135,7 @@ public class MultiUserSecureStorageActivity extends Activity {
     	return list;
     }
     
+    // Launches dialog to create a new user, does not handle NFC tags yet
     private void createUserDialog(Activity activity, final File appDir) {
     	final Dialog dialog = new Dialog(activity);
     	dialog.setContentView(R.layout.dialog_create_user);
@@ -148,8 +150,8 @@ public class MultiUserSecureStorageActivity extends Activity {
 			
 			@Override
 			public void onClick(View v) {
-				// Handle password later
 				String username = usernameEdit.getText().toString();
+				// Need to verify password length/strength
 				String password = MultiHelper.toSHA1(passwordEdit.getText().toString());
 				String nfc = "NFC";		// Temporary
 				MultiUserInfo newUser = new MultiUserInfo(username, password, nfc);
@@ -176,6 +178,7 @@ public class MultiUserSecureStorageActivity extends Activity {
 		File userList = getFile(strUserFile, appDir.listFiles());
 		try {
 			BufferedWriter writer = new BufferedWriter(new FileWriter(userList, true));
+			// Append and add '-' after each attribute
 			writer.append(newUser.getUserId());
 			writer.append("-");
 			writer.append(newUser.getPassword());
@@ -189,6 +192,8 @@ public class MultiUserSecureStorageActivity extends Activity {
 				tvMainText.setVisibility(View.GONE);
 			if (btnTapNFC.getVisibility() == View.GONE)
 				btnTapNFC.setVisibility(View.VISIBLE);
+			
+			// Refresh the user list
 			users = getUserList(userList);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
