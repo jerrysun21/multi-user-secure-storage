@@ -14,14 +14,18 @@ import android.app.Dialog;
 import android.content.Intent;
 import android.nfc.NdefMessage;
 import android.nfc.NfcAdapter;
+import android.opengl.Visibility;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Parcelable;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -31,10 +35,12 @@ public class MultiUserSecureStorageActivity extends Activity {
     final String strUserFile = "users";
     ArrayList<MultiUserInfo> users = new ArrayList<MultiUserInfo>();
     Button btnTapNFC;
+    Button btnCreateUser;
     // TextView for the line of text in the main activity
     TextView tvMainText;
     ArrayAdapter<String> adapter;
-
+    ListView lv;
+    File appDir;
     
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -42,10 +48,23 @@ public class MultiUserSecureStorageActivity extends Activity {
         setContentView(R.layout.main);
                 
         btnTapNFC = (Button)findViewById(R.id.main_tap_NFC);
+        btnCreateUser = (Button)findViewById(R.id.main_create_user);
         tvMainText = (TextView)findViewById(R.id.main_text);
         
         tvMainText.setVisibility(View.GONE);
         btnTapNFC.setVisibility(View.GONE);
+        btnCreateUser.setVisibility(View.GONE);
+        
+        btnCreateUser.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				createUserDialog(MultiUserSecureStorageActivity.this, appDir);
+
+//
+//				
+			}
+		});
         
         String diskState = Environment.getExternalStorageState();
         
@@ -63,7 +82,8 @@ public class MultiUserSecureStorageActivity extends Activity {
         	}
         	
         	// Check if application directory exists
-        	File appDir = getFile(strAppDir, sd.listFiles());
+        	// If ever forget where this is, /sdcard/data/jerrysun21.nujnah.multi/
+        	appDir = getFile(strAppDir, sd.listFiles());
         	if (appDir == null) {
         		// This folder not showing up on explorer (windows)
         		appDir = new File(sd.getAbsolutePath(), strAppDir);
@@ -92,10 +112,22 @@ public class MultiUserSecureStorageActivity extends Activity {
         		tvMainText.setText("No users found, please create a new user");
         	} else {
         		btnTapNFC.setVisibility(View.VISIBLE);
+        		btnCreateUser.setVisibility(View.VISIBLE);
         	}
+        	
+        	// Display list of users
+        	lv = (ListView)findViewById(R.id.user_list);
+        	ArrayList<String>userNames = new ArrayList<String>();
+        	for (int i = 0; i < users.size(); i++)
+        		userNames.add(users.get(i).getUserId());
+        	
+        	adapter = new ArrayAdapter<String>(this, R.layout.folder_list_item, userNames);
+        	lv.setAdapter(adapter);
+        	
         }
     }
         
+    
     private File getFile(String directoryName, File[] fileList) {
     	for (int i = 0; i < fileList.length; i++)
     		if (fileList[i].getName().equals(directoryName))
@@ -130,6 +162,7 @@ public class MultiUserSecureStorageActivity extends Activity {
     // Launches dialog to create a new user, does not handle NFC tags yet
     private void createUserDialog(Activity activity, final File appDir) {
     	final Dialog dialog = new Dialog(activity);
+    	dialog.setTitle("Create a User");
     	dialog.setContentView(R.layout.dialog_create_user);
     	
     	final EditText usernameEdit = (EditText)dialog.findViewById(R.id.create_user_user_name);
@@ -144,10 +177,13 @@ public class MultiUserSecureStorageActivity extends Activity {
 			public void onClick(View v) {
 				String username = usernameEdit.getText().toString();
 				// Need to verify password length/strength
-				String password = MultiHelper.toSHA1(passwordEdit.getText().toString());
+				String password = passwordEdit.getText().toString();
 				String nfc = "NFC";		// Temporary
 				MultiUserInfo newUser = new MultiUserInfo(username, password, nfc);
-				createUser(newUser, appDir);
+				if (newUser.validateInfo())
+					createUser(newUser, appDir);
+				else
+					Toast.makeText(MultiUserSecureStorageActivity.this, "Invalid username/password", Toast.LENGTH_SHORT).show();
 				dialog.dismiss();
 			}
 		});
@@ -187,6 +223,12 @@ public class MultiUserSecureStorageActivity extends Activity {
 			
 			// Refresh the user list
 			users = getUserList(userList);
+			adapter.clear();
+			ArrayList<String> userNames = new ArrayList<String>();
+			for (int i = 0; i < users.size(); i++)
+				userNames.add(users.get(i).getUserId());
+			adapter.addAll(userNames);
+			adapter.notifyDataSetChanged();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
