@@ -27,7 +27,6 @@
         android:hint="Password"
         android:password="true"
         style="@style/CreateUserDialogTextBox"/>
-        
     <LinearLayout
         android:orientation="horizontal"
         android:layout_width="match_parent"

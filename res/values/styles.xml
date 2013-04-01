@@ -3,13 +3,18 @@
     <style name="CreateUserDialogText">
         <item name="android:textSize">18dp</item>
         <item name="android:padding">4dp</item>
-    </style>    
+    </style>
 
     <style name="CreateUserDialogTextBox" parent="CreateUserDialogText">
         <item name="android:textSize">20dp</item>
     </style>
-    
+
     <style name="FolderListItem">
-        
+        <item name="android:textSize">22dp</item>
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:paddingTop">15dp</item>
+        <item name="android:paddingBottom">15dp</item>
+        <item name="android:paddingLeft">13dp</item>
+        <item name="android:clickable">true</item>
     </style>
 </resources>
