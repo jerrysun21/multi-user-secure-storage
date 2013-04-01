@@ -15,14 +15,53 @@ public class MultiUserInfo {
 		this.NFCToken = NFCToken;
 	}
 	
+	private Boolean checkCharacters(String input) {
+		char[] invalidChar = {'/', '#', '\\'};
+		
+		for (int i = 0; i < invalidChar.length; i++) {
+			if (input.indexOf(invalidChar[i]) != -1)
+				return false;
+		}
+				
+		return true;
+	}
+	
+	// Looks for invalid characters
+	private Boolean checkUsername() {
+		if (!checkCharacters(userId))
+			return false;
+		return true;
+	}
+	
+	// Length and invalid characters
+	private Boolean checkPassword() {
+		if (!checkCharacters(password))
+			return false;
+		
+		if (password.length() < 6)
+			return false;
+		
+		return true;
+	}
+	
+	// Santizes username/password
+	public Boolean validateInfo() {
+		if (!checkUsername() || !checkPassword())
+			return false;
+		else
+			return true;
+	}
+	
 	public String getUserId() {
 		return userId;
 	}
 	public void setUserId(String userId) {
 		this.userId = userId;
 	}
+	
+	// Returns hashed password
 	public String getPassword() {
-		return password;
+		return MultiHelper.toSHA1(password);
 	}
 	public void setPassword(String password) {
 		this.password = password;
