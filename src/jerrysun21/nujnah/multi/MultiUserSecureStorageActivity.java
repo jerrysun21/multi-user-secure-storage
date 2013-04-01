@@ -22,6 +22,8 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -38,7 +40,7 @@ public class MultiUserSecureStorageActivity extends Activity {
     Button btnCreateUser;
     // TextView for the line of text in the main activity
     TextView tvMainText;
-    ArrayAdapter<String> adapter;
+    MultiUserFileAdapter adapter;
     ListView lv;
     File appDir;
     
@@ -50,6 +52,7 @@ public class MultiUserSecureStorageActivity extends Activity {
         btnTapNFC = (Button)findViewById(R.id.main_tap_NFC);
         btnCreateUser = (Button)findViewById(R.id.main_create_user);
         tvMainText = (TextView)findViewById(R.id.main_text);
+    	lv = (ListView)findViewById(R.id.user_list);
         
         tvMainText.setVisibility(View.GONE);
         btnTapNFC.setVisibility(View.GONE);
@@ -63,6 +66,24 @@ public class MultiUserSecureStorageActivity extends Activity {
 
 //
 //				
+			}
+		});
+        
+        lv.setOnItemClickListener(new OnItemClickListener() {
+
+			@Override
+			public void onItemClick(AdapterView<?> arg0, View arg1, int arg2,
+					long arg3) {
+				// TODO Auto-generated method stub
+				String item = ((TextView)arg1).getText().toString();
+				Bundle data = new Bundle();
+				File userdir = getFile(item, appDir.listFiles());
+				if (userdir != null) {
+					data.putString("userdir", userdir.getAbsolutePath());
+					Intent intent = new Intent(MultiUserSecureStorageActivity.this, UserFolderBrowser.class);
+					intent.putExtras(data);
+					startActivity(intent);
+				}
 			}
 		});
         
@@ -115,15 +136,14 @@ public class MultiUserSecureStorageActivity extends Activity {
         		btnCreateUser.setVisibility(View.VISIBLE);
         	}
         	
-        	// Display list of users
-        	lv = (ListView)findViewById(R.id.user_list);
-        	ArrayList<String>userNames = new ArrayList<String>();
-        	for (int i = 0; i < users.size(); i++)
-        		userNames.add(users.get(i).getUserId());
+        	// Display list of users, based on file folders
+        	ArrayList<File>userNames = new ArrayList<File>();
+        	for (int i = 0; i < appDir.listFiles().length; i++)
+        		userNames.add(appDir.listFiles()[i]);
         	
-        	adapter = new ArrayAdapter<String>(this, R.layout.folder_list_item, userNames);
+        	adapter = new MultiUserFileAdapter(this, R.layout.folder_list_item, userNames);
         	lv.setAdapter(adapter);
-        	
+        	lv.requestFocus();
         }
     }
         
@@ -224,9 +244,9 @@ public class MultiUserSecureStorageActivity extends Activity {
 			// Refresh the user list
 			users = getUserList(userList);
 			adapter.clear();
-			ArrayList<String> userNames = new ArrayList<String>();
-			for (int i = 0; i < users.size(); i++)
-				userNames.add(users.get(i).getUserId());
+			ArrayList<File> userNames = new ArrayList<File>();
+			for (int i = 0; i < appDir.listFiles().length; i++)
+				userNames.add(appDir.listFiles()[i]);
 			adapter.addAll(userNames);
 			adapter.notifyDataSetChanged();
 		} catch (IOException e) {
