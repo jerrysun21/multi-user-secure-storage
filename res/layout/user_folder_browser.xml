@@ -8,6 +8,12 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Add file"/>
+
+    
+    <TextView
+        android:id="@+id/ufb_status_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
     
     <ListView
         android:id="@+id/ufb_file_list"
