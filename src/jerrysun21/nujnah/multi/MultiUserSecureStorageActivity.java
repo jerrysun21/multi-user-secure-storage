@@ -171,40 +171,25 @@ public class MultiUserSecureStorageActivity extends Activity {
 			public void onClick(View v) {
 				String password = "password";
 				password += nfcData;
-
 				password += Secure.getString(getBaseContext()
 						.getContentResolver(), Secure.ANDROID_ID);
 				Log.d("jerry", "password is " + password);
-				
-				String dataToEncrypt = "asldkfjaw;eghaoiwebnaowieh091y2509r8q2y389tghawoibuv;boiwye98rthq23ngv9pa8w3hbnp9wun3f9a8wheg[a9ubnaw9[8hytr-9182hrtpi1fg";
-				
+
+				String dataToEncrypt = "asldkfjaw;eghaoiwebnaowieh091y2509r8q2y389tghawoibuv;boiwye98rthq23ngv9pa8w3hbnp9wun3f9a8wheg[a9ubnaw9[8hytr-9182hrtpi1faqwfdcig";
+
 				try {
 					encryptFile("hello", dataToEncrypt, password);
 					String s = decryptFile("hello", password);
-					
+
+					Log.d("jerry",
+							dataToEncrypt + "\t" + dataToEncrypt.length()
+									+ "\n" + s + "\t" + s.length());
+					int trimLength = s.charAt(s.length() - 1);
+					Log.d("jerry", "trim length is: " + trimLength);
+					s = s.substring(0, s.length() - trimLength);
+					Log.d("jerry", "trimmed file " + s);
 					if (s.equals(dataToEncrypt)) {
-						Log.d("jerry", "encryption and decryption on file works" + s);
-						int trimLength = s.charAt(s.length() - 1);
-						Log.d("jerry", "trim length is: "+ trimLength);
-						s = s.substring(0, s.length() - trimLength);
-						Log.d("jerry", "trimmed file " + s);
-					} else {
-						Log.d("jerry", dataToEncrypt + "\n" + s);
-					}
-					
-					MessageDigest digest = MessageDigest.getInstance("SHA");
-					digest.update(password.getBytes());
-					// AES requires a key with 128 bits (16 bytes)
-					SecretKeySpec key = new SecretKeySpec(digest.digest(), 0, 16, "AES");
-					aes.init(Cipher.ENCRYPT_MODE, key);
-					byte[] hashedData = aes.doFinal(dataToEncrypt.getBytes("UTF-8"));
-					Log.d("jerry", "Here is the hashed data: " + hashedData);
-					
-					aes.init(Cipher.DECRYPT_MODE, key);
-					byte[] decryptedData = aes.doFinal(hashedData);
-					String decryptedString = new String(decryptedData, "UTF-8");
-					if (decryptedString.equals(dataToEncrypt)) {
-						Log.d("jerry", "ENCRYPTION WORKS");
+						Log.d("jerry", "fuck padding");
 					}
 				} catch (Exception e) {
 					Log.e("jerry", "BARGFFFFFFFFF");
@@ -220,25 +205,31 @@ public class MultiUserSecureStorageActivity extends Activity {
 				return fileList[i];
 		return null;
 	}
-	
-	private void encryptFile(String fileName, String dataToEncrypt, String password) throws Exception {
+
+	private void encryptFile(String fileName, String dataToEncrypt,
+			String password) throws Exception {
 		Cipher aes = Cipher.getInstance("AES/ECB/PKCS5Padding");
 		if (dataToEncrypt.length() % 16 != 0) {
-			Log.d("jerry", "lenght of string" + dataToEncrypt.length() + "\nLEGNTH: " + (16 - dataToEncrypt.length() % 16));
 			char pad = (char) (16 - dataToEncrypt.length() % 16);
 			for (int i = 0; i < pad; i++) {
 				dataToEncrypt += pad;
 			}
+		} else {
+			char pad = (char) 16;
+			for (int i = 0; i < pad; i++) {
+				dataToEncrypt += pad;
+			}
 		}
-		
+
 		MessageDigest digest1 = MessageDigest.getInstance("SHA");
 		digest1.update(password.getBytes());
 		// AES requires a key with 128 bits (16 bytes)
 		SecretKeySpec key1 = new SecretKeySpec(digest1.digest(), 0, 16, "AES");
 		aes.init(Cipher.ENCRYPT_MODE, key1);
-		
+
 		FileOutputStream fos = openFileOutput(fileName, MODE_PRIVATE);
-		Log.d("jerry", "writing all data " + dataToEncrypt.getBytes("UTF-8").length);
+		Log.d("jerry", "writing all data "
+				+ dataToEncrypt.getBytes("UTF-8").length);
 		CipherOutputStream cos = new CipherOutputStream(fos, aes);
 		cos.write(dataToEncrypt.getBytes("UTF-8"));
 		cos.flush();
@@ -246,17 +237,18 @@ public class MultiUserSecureStorageActivity extends Activity {
 		cos.close();
 		fos.close();
 	}
-	
-	private String decryptFile(String fileName, String password) throws Exception {
+
+	private String decryptFile(String fileName, String password)
+			throws Exception {
 		Cipher aes = Cipher.getInstance("AES/ECB/PKCS5Padding");
 		MessageDigest digest1 = MessageDigest.getInstance("SHA");
 		digest1.update(password.getBytes());
 		// AES requires a key with 128 bits (16 bytes)
 		SecretKeySpec key1 = new SecretKeySpec(digest1.digest(), 0, 16, "AES");
-		
+
 		FileInputStream fis = openFileInput(fileName);
 		aes.init(Cipher.DECRYPT_MODE, key1);
-		
+
 		CipherInputStream cis = new CipherInputStream(fis, aes);
 		int size = (int) fis.getChannel().size() - 16;
 		byte[] data = new byte[size];
@@ -265,7 +257,7 @@ public class MultiUserSecureStorageActivity extends Activity {
 		String s = new String(data, "UTF-8");
 		cis.close();
 		fis.close();
-		
+
 		return s;
 	}
 
