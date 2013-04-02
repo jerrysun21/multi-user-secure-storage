@@ -9,8 +9,8 @@
         android:targetSdkVersion="16" />
 
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.NFC" />
-
+<!--     <uses-permission android:name="android.permission.NFC" />
+ -->
     <uses-feature
         android:name="android.hardware.nfc"
         android:required="true" />
@@ -33,6 +33,12 @@
 				<data android:scheme="jerry"/>
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
+        </activity>
+        <activity
+            android:name=".PasswordEmitActivity">
+        </activity>
+        <activity
+            android:name=".UserFolderBrowser">
         </activity>
     </application>
 

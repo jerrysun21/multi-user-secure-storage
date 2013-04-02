@@ -59,13 +59,11 @@ public class MultiUserSecureStorageActivity extends Activity {
 			
 			@Override
 			public void onClick(View v) {
-				createUserDialog(MultiUserSecureStorageActivity.this, appDir);
-
-//
-//				
+				createUserDialog(MultiUserSecureStorageActivity.this, appDir);	
 			}
 		});
         
+        lv.setClickable(true);
         lv.setOnItemClickListener(new OnItemClickListener() {
 
 			@Override
@@ -135,8 +133,10 @@ public class MultiUserSecureStorageActivity extends Activity {
         	
         	// Display list of users, based on file folders
         	ArrayList<File>userNames = new ArrayList<File>();
-        	for (int i = 0; i < appDir.listFiles().length; i++)
-        		userNames.add(appDir.listFiles()[i]);
+        	File files[] = appDir.listFiles();
+        	for (int i = 0; i < files.length; i++)
+        		if (!files[i].getAbsolutePath().equals(appDir.getAbsolutePath() + "/users"))
+        			userNames.add(files[i]);
         	
         	adapter = new MultiUserFileAdapter(this, R.layout.folder_list_item, userNames);
         	lv.setAdapter(adapter);
@@ -240,10 +240,17 @@ public class MultiUserSecureStorageActivity extends Activity {
 			
 			// Refresh the user list
 			users = getUserList(userList);
+			
+			if (users.size() > 0 && btnCreateUser.getVisibility() != View.VISIBLE)
+				btnCreateUser.setVisibility(View.VISIBLE);
+			
 			adapter.clear();
 			ArrayList<File> userNames = new ArrayList<File>();
-			for (int i = 0; i < appDir.listFiles().length; i++)
-				userNames.add(appDir.listFiles()[i]);
+        	File files[] = appDir.listFiles();
+        	for (int i = 0; i < files.length; i++)
+        		if (!files[i].getAbsolutePath().equals(appDir.getAbsolutePath() + "/users"))
+        			userNames.add(files[i]);
+        	
 			adapter.addAll(userNames);
 			adapter.notifyDataSetChanged();
 		} catch (IOException e) {
