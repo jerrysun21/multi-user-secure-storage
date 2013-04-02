@@ -23,6 +23,13 @@
         android:text="Create User"
                 android:focusable="false"
          />
+    <Button
+        android:id="@+id/main_encrypt"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Encrypt Test"
+                android:focusable="false"
+         />
     
     <ListView 
         android:id="@+id/user_list"

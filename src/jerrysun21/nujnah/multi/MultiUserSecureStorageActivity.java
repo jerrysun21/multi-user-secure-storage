@@ -4,10 +4,17 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.security.MessageDigest;
 import java.util.ArrayList;
+
+import javax.crypto.Cipher;
+import javax.crypto.CipherInputStream;
+import javax.crypto.CipherOutputStream;
+import javax.crypto.spec.SecretKeySpec;
 
 import android.app.Activity;
 import android.app.Dialog;
@@ -17,6 +24,8 @@ import android.nfc.NfcAdapter;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Parcelable;
+import android.provider.Settings.Secure;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.AdapterView;
@@ -27,202 +36,320 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class MultiUserSecureStorageActivity extends Activity {    
-    
-    final String strAppDir = "jerrysun21.nujnah.multi";
-    final String strUserFile = "users";
-    ArrayList<MultiUserInfo> users = new ArrayList<MultiUserInfo>();
-    Button btnTapNFC;
-    Button btnCreateUser;
-    // TextView for the line of text in the main activity
-    TextView tvMainText;
-    MultiUserFileAdapter adapter;
-    ListView lv;
-    File appDir;
-    String nfcData;
-    
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.main);
-                
-        btnTapNFC = (Button)findViewById(R.id.main_tap_NFC);
-        btnCreateUser = (Button)findViewById(R.id.main_create_user);
-        tvMainText = (TextView)findViewById(R.id.main_text);
-    	lv = (ListView)findViewById(R.id.user_list);
-        
-        tvMainText.setVisibility(View.GONE);
-        btnTapNFC.setVisibility(View.GONE);
-        btnCreateUser.setVisibility(View.GONE);
-        
-        btnCreateUser.setOnClickListener(new OnClickListener() {
-			
+public class MultiUserSecureStorageActivity extends Activity {
+
+	final String strAppDir = "jerrysun21.nujnah.multi";
+	final String strUserFile = "users";
+	ArrayList<MultiUserInfo> users = new ArrayList<MultiUserInfo>();
+	Button btnTapNFC;
+	Button btnCreateUser;
+	Button btnEncrypt;
+	// TextView for the line of text in the main activity
+	TextView tvMainText;
+	MultiUserFileAdapter adapter;
+	ListView lv;
+	File appDir;
+	String nfcData;
+
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.main);
+
+		btnTapNFC = (Button) findViewById(R.id.main_tap_NFC);
+		btnCreateUser = (Button) findViewById(R.id.main_create_user);
+		tvMainText = (TextView) findViewById(R.id.main_text);
+		lv = (ListView) findViewById(R.id.user_list);
+
+		tvMainText.setVisibility(View.GONE);
+		btnTapNFC.setVisibility(View.GONE);
+		btnCreateUser.setVisibility(View.GONE);
+
+		btnCreateUser.setOnClickListener(new OnClickListener() {
+
 			@Override
 			public void onClick(View v) {
-				createUserDialog(MultiUserSecureStorageActivity.this, appDir);	
+				createUserDialog(MultiUserSecureStorageActivity.this, appDir);
 			}
 		});
-        
-        lv.setClickable(true);
-        lv.setOnItemClickListener(new OnItemClickListener() {
+
+		lv.setClickable(true);
+		lv.setOnItemClickListener(new OnItemClickListener() {
 
 			@Override
 			public void onItemClick(AdapterView<?> arg0, View arg1, int arg2,
 					long arg3) {
 				// TODO Auto-generated method stub
-				String item = ((TextView)arg1).getText().toString();
+				String item = ((TextView) arg1).getText().toString();
 				Bundle data = new Bundle();
 				File userdir = getFile(item, appDir.listFiles());
 				if (userdir != null) {
 					data.putString("userdir", userdir.getAbsolutePath());
-					Intent intent = new Intent(MultiUserSecureStorageActivity.this, UserFolderBrowser.class);
+					Intent intent = new Intent(
+							MultiUserSecureStorageActivity.this,
+							UserFolderBrowser.class);
 					intent.putExtras(data);
 					startActivity(intent);
 				}
 			}
 		});
-        
-        String diskState = Environment.getExternalStorageState();
-        
-        if (diskState.equals(Environment.MEDIA_UNMOUNTED) || diskState.equals(Environment.MEDIA_MOUNTED_READ_ONLY)) {
-        	Toast.makeText(getApplicationContext(), "Storage not useable", Toast.LENGTH_SHORT).show();
-        } else {
-        	File sd = Environment.getExternalStorageDirectory();
-        	
-        	// Get the data directory in SD card root (/something-something/0)
-        	sd = getFile("data", sd.listFiles());
-        	if (sd == null) {
-        		File newDir = new File(Environment.getExternalStorageDirectory().getAbsolutePath(), "data");
-        		newDir.mkdir();
-        		sd = getFile("data", Environment.getExternalStorageDirectory().listFiles());
-        	}
-        	
-        	// Check if application directory exists
-        	// If ever forget where this is, /sdcard/data/jerrysun21.nujnah.multi/
-        	appDir = getFile(strAppDir, sd.listFiles());
-        	if (appDir == null) {
-        		// This folder not showing up on explorer (windows)
-        		appDir = new File(sd.getAbsolutePath(), strAppDir);
-        		appDir.mkdir();
-        	}
-        	
-        	// Check for a list of users, make my life easy and use a textfile
-        	
-        	File userFile = getFile(strUserFile, appDir.listFiles());
-        	if (userFile == null) {
-        		userFile = new File (appDir.getAbsoluteFile(), strUserFile);
-        		try {
+
+		String diskState = Environment.getExternalStorageState();
+
+		if (diskState.equals(Environment.MEDIA_UNMOUNTED)
+				|| diskState.equals(Environment.MEDIA_MOUNTED_READ_ONLY)) {
+			Toast.makeText(getApplicationContext(), "Storage not useable",
+					Toast.LENGTH_SHORT).show();
+		} else {
+			File sd = Environment.getExternalStorageDirectory();
+
+			// Get the data directory in SD card root (/something-something/0)
+			sd = getFile("data", sd.listFiles());
+			if (sd == null) {
+				File newDir = new File(Environment
+						.getExternalStorageDirectory().getAbsolutePath(),
+						"data");
+				newDir.mkdir();
+				sd = getFile("data", Environment.getExternalStorageDirectory()
+						.listFiles());
+			}
+
+			// Check if application directory exists
+			// If ever forget where this is,
+			// /sdcard/data/jerrysun21.nujnah.multi/
+			appDir = getFile(strAppDir, sd.listFiles());
+			if (appDir == null) {
+				// This folder not showing up on explorer (windows)
+				appDir = new File(sd.getAbsolutePath(), strAppDir);
+				appDir.mkdir();
+			}
+
+			// Check for a list of users, make my life easy and use a textfile
+
+			File userFile = getFile(strUserFile, appDir.listFiles());
+			if (userFile == null) {
+				userFile = new File(appDir.getAbsoluteFile(), strUserFile);
+				try {
 					userFile.createNewFile();
 					userFile.setWritable(true);
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
-        	}
-        	
-        	// Build list of users
-        	users = getUserList(userFile);
-        	if (users.size() == 0) {
-        		Toast.makeText(getApplicationContext(), "No users found please create a user", Toast.LENGTH_SHORT).show();
-        		createUserDialog(this, appDir);
-        		tvMainText.setVisibility(View.VISIBLE);
-        		tvMainText.setText("No users found, please create a new user");
-        	} else {
-        		btnTapNFC.setVisibility(View.VISIBLE);
-        		btnCreateUser.setVisibility(View.VISIBLE);
-        	}
-        	
-        	// Display list of users, based on file folders
-        	ArrayList<File>userNames = new ArrayList<File>();
-        	File files[] = appDir.listFiles();
-        	for (int i = 0; i < files.length; i++)
-        		if (!files[i].getAbsolutePath().equals(appDir.getAbsolutePath() + "/users"))
-        			userNames.add(files[i]);
-        	
-        	adapter = new MultiUserFileAdapter(this, R.layout.folder_list_item, userNames);
-        	lv.setAdapter(adapter);
-        	lv.requestFocus();
-        }
-    }
-        
-    
-    private File getFile(String directoryName, File[] fileList) {
-    	for (int i = 0; i < fileList.length; i++)
-    		if (fileList[i].getName().equals(directoryName))
-    			return fileList[i];
-    	return null;
-    }
-    
-    // Probably move this into another thread, would get slow once there are a lot of users
-    private ArrayList<MultiUserInfo> getUserList(File userFile) {
-    	ArrayList<MultiUserInfo> list = new ArrayList<MultiUserInfo> ();
-    	String line;
-    	
-    	try {
-    		FileInputStream fin = new FileInputStream(userFile);
-    		BufferedReader reader = new BufferedReader(new InputStreamReader(fin));
-    		while ((line = reader.readLine()) != null) {
-    			String[] temp;
-    			// Split the line by '-' and create a temporary user
-    			temp = line.split("-");
-    			MultiUserInfo tempUser = new MultiUserInfo(temp[0], temp[1], temp[2]);
-    			list.add(tempUser);
-    		}
-    		reader.close();
-    		fin.close();
-    	} catch (Exception e) {
-    		e.printStackTrace();
-    	}
-    	
-    	return list;
-    }
-    
-    // Launches dialog to create a new user, does not handle NFC tags yet
-    private void createUserDialog(Activity activity, final File appDir) {
-    	final Dialog dialog = new Dialog(activity);
-    	dialog.setTitle("Create a User");
-    	dialog.setContentView(R.layout.dialog_create_user);
-    	
-    	final EditText usernameEdit = (EditText)dialog.findViewById(R.id.create_user_user_name);
-    	final EditText passwordEdit = (EditText)dialog.findViewById(R.id.create_user_password);
-    	
-    	Button okButton = (Button)dialog.findViewById(R.id.cuOK);
-    	Button cancelButton = (Button)dialog.findViewById(R.id.cuCancel);
-    	
-    	okButton.setOnClickListener(new OnClickListener() {
-			
+			}
+
+			// Build list of users
+			users = getUserList(userFile);
+			if (users.size() == 0) {
+				Toast.makeText(getApplicationContext(),
+						"No users found please create a user",
+						Toast.LENGTH_SHORT).show();
+				createUserDialog(this, appDir);
+				tvMainText.setVisibility(View.VISIBLE);
+				tvMainText.setText("No users found, please create a new user");
+			} else {
+				btnTapNFC.setVisibility(View.VISIBLE);
+				btnCreateUser.setVisibility(View.VISIBLE);
+			}
+
+			// Display list of users, based on file folders
+			ArrayList<File> userNames = new ArrayList<File>();
+			File files[] = appDir.listFiles();
+			for (int i = 0; i < files.length; i++)
+				if (!files[i].getAbsolutePath().equals(
+						appDir.getAbsolutePath() + "/users"))
+					userNames.add(files[i]);
+
+			adapter = new MultiUserFileAdapter(this, R.layout.folder_list_item,
+					userNames);
+			lv.setAdapter(adapter);
+			lv.requestFocus();
+		}
+		btnEncrypt = (Button) findViewById(R.id.main_encrypt);
+		btnEncrypt.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				String password = "password";
+				password += nfcData;
+
+				password += Secure.getString(getBaseContext()
+						.getContentResolver(), Secure.ANDROID_ID);
+				Log.d("jerry", "password is " + password);
+				
+				String dataToEncrypt = "asldkfjaw;eghaoiwebnaowieh091y2509r8q2y389tghawoibuv;boiwye98rthq23ngv9pa8w3hbnp9wun3f9a8wheg[a9ubnaw9[8hytr-9182hrtpi1fg";
+				
+				try {
+					encryptFile("hello", dataToEncrypt, password);
+					String s = decryptFile("hello", password);
+					
+					if (s.equals(dataToEncrypt)) {
+						Log.d("jerry", "encryption and decryption on file works" + s);
+						int trimLength = s.charAt(s.length() - 1);
+						Log.d("jerry", "trim length is: "+ trimLength);
+						s = s.substring(0, s.length() - trimLength);
+						Log.d("jerry", "trimmed file " + s);
+					} else {
+						Log.d("jerry", dataToEncrypt + "\n" + s);
+					}
+					
+					MessageDigest digest = MessageDigest.getInstance("SHA");
+					digest.update(password.getBytes());
+					// AES requires a key with 128 bits (16 bytes)
+					SecretKeySpec key = new SecretKeySpec(digest.digest(), 0, 16, "AES");
+					aes.init(Cipher.ENCRYPT_MODE, key);
+					byte[] hashedData = aes.doFinal(dataToEncrypt.getBytes("UTF-8"));
+					Log.d("jerry", "Here is the hashed data: " + hashedData);
+					
+					aes.init(Cipher.DECRYPT_MODE, key);
+					byte[] decryptedData = aes.doFinal(hashedData);
+					String decryptedString = new String(decryptedData, "UTF-8");
+					if (decryptedString.equals(dataToEncrypt)) {
+						Log.d("jerry", "ENCRYPTION WORKS");
+					}
+				} catch (Exception e) {
+					Log.e("jerry", "BARGFFFFFFFFF");
+					e.printStackTrace();
+				}
+			}
+		});
+	}
+
+	private File getFile(String directoryName, File[] fileList) {
+		for (int i = 0; i < fileList.length; i++)
+			if (fileList[i].getName().equals(directoryName))
+				return fileList[i];
+		return null;
+	}
+	
+	private void encryptFile(String fileName, String dataToEncrypt, String password) throws Exception {
+		Cipher aes = Cipher.getInstance("AES/ECB/PKCS5Padding");
+		if (dataToEncrypt.length() % 16 != 0) {
+			Log.d("jerry", "lenght of string" + dataToEncrypt.length() + "\nLEGNTH: " + (16 - dataToEncrypt.length() % 16));
+			char pad = (char) (16 - dataToEncrypt.length() % 16);
+			for (int i = 0; i < pad; i++) {
+				dataToEncrypt += pad;
+			}
+		}
+		
+		MessageDigest digest1 = MessageDigest.getInstance("SHA");
+		digest1.update(password.getBytes());
+		// AES requires a key with 128 bits (16 bytes)
+		SecretKeySpec key1 = new SecretKeySpec(digest1.digest(), 0, 16, "AES");
+		aes.init(Cipher.ENCRYPT_MODE, key1);
+		
+		FileOutputStream fos = openFileOutput(fileName, MODE_PRIVATE);
+		Log.d("jerry", "writing all data " + dataToEncrypt.getBytes("UTF-8").length);
+		CipherOutputStream cos = new CipherOutputStream(fos, aes);
+		cos.write(dataToEncrypt.getBytes("UTF-8"));
+		cos.flush();
+		fos.flush();
+		cos.close();
+		fos.close();
+	}
+	
+	private String decryptFile(String fileName, String password) throws Exception {
+		Cipher aes = Cipher.getInstance("AES/ECB/PKCS5Padding");
+		MessageDigest digest1 = MessageDigest.getInstance("SHA");
+		digest1.update(password.getBytes());
+		// AES requires a key with 128 bits (16 bytes)
+		SecretKeySpec key1 = new SecretKeySpec(digest1.digest(), 0, 16, "AES");
+		
+		FileInputStream fis = openFileInput(fileName);
+		aes.init(Cipher.DECRYPT_MODE, key1);
+		
+		CipherInputStream cis = new CipherInputStream(fis, aes);
+		int size = (int) fis.getChannel().size() - 16;
+		byte[] data = new byte[size];
+		cis.read(data, 0, size);
+		Log.d("jerry", "reading all data " + size);
+		String s = new String(data, "UTF-8");
+		cis.close();
+		fis.close();
+		
+		return s;
+	}
+
+	// Probably move this into another thread, would get slow once there are a
+	// lot of users
+	private ArrayList<MultiUserInfo> getUserList(File userFile) {
+		ArrayList<MultiUserInfo> list = new ArrayList<MultiUserInfo>();
+		String line;
+
+		try {
+			FileInputStream fin = new FileInputStream(userFile);
+			BufferedReader reader = new BufferedReader(new InputStreamReader(
+					fin));
+			while ((line = reader.readLine()) != null) {
+				String[] temp;
+				// Split the line by '-' and create a temporary user
+				temp = line.split("-");
+				MultiUserInfo tempUser = new MultiUserInfo(temp[0], temp[1],
+						temp[2]);
+				list.add(tempUser);
+			}
+			reader.close();
+			fin.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		return list;
+	}
+
+	// Launches dialog to create a new user, does not handle NFC tags yet
+	private void createUserDialog(Activity activity, final File appDir) {
+		final Dialog dialog = new Dialog(activity);
+		dialog.setTitle("Create a User");
+		dialog.setContentView(R.layout.dialog_create_user);
+
+		final EditText usernameEdit = (EditText) dialog
+				.findViewById(R.id.create_user_user_name);
+		final EditText passwordEdit = (EditText) dialog
+				.findViewById(R.id.create_user_password);
+
+		Button okButton = (Button) dialog.findViewById(R.id.cuOK);
+		Button cancelButton = (Button) dialog.findViewById(R.id.cuCancel);
+
+		okButton.setOnClickListener(new OnClickListener() {
+
 			@Override
 			public void onClick(View v) {
 				String username = usernameEdit.getText().toString();
 				// Need to verify password length/strength
 				String password = passwordEdit.getText().toString();
-				String nfc = "NFC";		// Temporary
-				MultiUserInfo newUser = new MultiUserInfo(username, password, nfc);
+				String nfc = "NFC"; // Temporary
+				MultiUserInfo newUser = new MultiUserInfo(username, password,
+						nfc);
 				if (newUser.validateInfo())
 					createUser(newUser, appDir);
 				else
-					Toast.makeText(MultiUserSecureStorageActivity.this, "Invalid username/password", Toast.LENGTH_SHORT).show();
+					Toast.makeText(MultiUserSecureStorageActivity.this,
+							"Invalid username/password", Toast.LENGTH_SHORT)
+							.show();
 				dialog.dismiss();
 			}
 		});
-    	
-    	cancelButton.setOnClickListener(new OnClickListener() {
-			
+
+		cancelButton.setOnClickListener(new OnClickListener() {
+
 			@Override
 			public void onClick(View v) {
 				dialog.dismiss();
 			}
 		});
-    	dialog.show();
-    	
-    }
-    
-    // Appends username to file & creates a folder for the user
-    private void createUser(MultiUserInfo newUser, final File appDir) {
-		File userFolder = new File (appDir.getAbsolutePath(), newUser.getUserId());
+		dialog.show();
+
+	}
+
+	// Appends username to file & creates a folder for the user
+	private void createUser(MultiUserInfo newUser, final File appDir) {
+		File userFolder = new File(appDir.getAbsolutePath(),
+				newUser.getUserId());
 		userFolder.mkdir();
 		File userList = getFile(strUserFile, appDir.listFiles());
 		try {
-			BufferedWriter writer = new BufferedWriter(new FileWriter(userList, true));
+			BufferedWriter writer = new BufferedWriter(new FileWriter(userList,
+					true));
 			// Append and add '-' after each attribute
 			writer.append(newUser.getUserId());
 			writer.append("-");
@@ -231,67 +358,61 @@ public class MultiUserSecureStorageActivity extends Activity {
 			writer.append(newUser.getNFCToken());
 			writer.newLine();
 			writer.close();
-			
+
 			// Display new list of users
 			if (tvMainText.getVisibility() == View.VISIBLE)
 				tvMainText.setVisibility(View.GONE);
 			if (btnTapNFC.getVisibility() == View.GONE)
 				btnTapNFC.setVisibility(View.VISIBLE);
-			
+
 			// Refresh the user list
 			users = getUserList(userList);
-			
-			if (users.size() > 0 && btnCreateUser.getVisibility() != View.VISIBLE)
+
+			if (users.size() > 0
+					&& btnCreateUser.getVisibility() != View.VISIBLE)
 				btnCreateUser.setVisibility(View.VISIBLE);
-			
+
 			adapter.clear();
 			ArrayList<File> userNames = new ArrayList<File>();
-        	File files[] = appDir.listFiles();
-        	for (int i = 0; i < files.length; i++)
-        		if (!files[i].getAbsolutePath().equals(appDir.getAbsolutePath() + "/users"))
-        			userNames.add(files[i]);
-        	
+			File files[] = appDir.listFiles();
+			for (int i = 0; i < files.length; i++)
+				if (!files[i].getAbsolutePath().equals(
+						appDir.getAbsolutePath() + "/users"))
+					userNames.add(files[i]);
+
 			adapter.addAll(userNames);
 			adapter.notifyDataSetChanged();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
 
-    }
-    
-    @Override
-    public void onResume() {
-        super.onResume();
-        // Check to see that the Activity started due to an Android Beam
-        if (NfcAdapter.ACTION_NDEF_DISCOVERED.equals(getIntent().getAction())) {
-            processIntent(getIntent());
-        }
-    }
-    
+	}
 
+	@Override
+	public void onResume() {
+		super.onResume();
+		// Check to see that the Activity started due to an Android Beam
+		if (NfcAdapter.ACTION_NDEF_DISCOVERED.equals(getIntent().getAction())) {
+			processIntent(getIntent());
+		}
+	}
 
-    @Override
-    public void onNewIntent(Intent intent) {
-        // onResume gets called after this to handle the intent
-        setIntent(intent);
-    }
+	/**
+	 * Parses the NDEF Message from the intent and prints to the TextView
+	 */
+	void processIntent(Intent intent) {
+		// textView = (TextView) findViewById(R.id.textView);
+		Parcelable[] rawMsgs = intent
+				.getParcelableArrayExtra(NfcAdapter.EXTRA_NDEF_MESSAGES);
+		// only one message sent during the beam
+		NdefMessage msg = (NdefMessage) rawMsgs[0];
+		// record 0 contains the MIME type, record 1 is the AAR, if present
+		String password = new String(msg.getRecords()[0].getPayload());
+		password = password.substring(password.indexOf("jerry://") + 8,
+				password.indexOf('Q', password.indexOf("jerry://")));
+		tvMainText.setText(password);
+		nfcData = password;
+	}
 
-    /**
-     * Parses the NDEF Message from the intent and prints to the TextView
-     */
-    void processIntent(Intent intent) {
-        //textView = (TextView) findViewById(R.id.textView);
-        Parcelable[] rawMsgs = intent.getParcelableArrayExtra(
-                NfcAdapter.EXTRA_NDEF_MESSAGES);
-        // only one message sent during the beam
-        NdefMessage msg = (NdefMessage) rawMsgs[0];
-        // record 0 contains the MIME type, record 1 is the AAR, if present
-        String password = new String(msg.getRecords()[0].getPayload());
-        password = password.substring(password.indexOf("jerry://") + 8, password.indexOf('Q', password.indexOf("jerry://")));
-        tvMainText.setText(password);
-        nfcData = password;
-    }
-    
 }
