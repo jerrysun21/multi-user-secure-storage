@@ -28,16 +28,15 @@
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-            <intent-filter>
-                <action android:name="android.nfc.action.NDEF_DISCOVERED" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-
-                <data android:mimeType="text/password" />
-            </intent-filter>
         </activity>
         <activity
             android:name=".PasswordEmitActivity">
+            <intent-filter>
+                <action android:name="android.nfc.action.NDEF_DISCOVERED" />
+				<data android:scheme="jerry"/>
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+            
 
         </activity>
     </application>
