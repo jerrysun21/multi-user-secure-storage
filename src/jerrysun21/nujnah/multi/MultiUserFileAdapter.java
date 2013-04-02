@@ -5,14 +5,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 import android.app.Activity;
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Typeface;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.webkit.MimeTypeMap;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
@@ -76,6 +81,7 @@ public class MultiUserFileAdapter extends ArrayAdapter<File> {
 	private void clickFile(String item) {
 		File userdir = null;
 		Bundle data = new Bundle();
+		Boolean isDir = true;
 
 		for (int i = 0; i < list.size(); i++) {
 			File temp = list.get(i);
@@ -87,9 +93,13 @@ public class MultiUserFileAdapter extends ArrayAdapter<File> {
 					userdir = temp; 		// Going up a level
 					break;
 				}
+			} else if (temp.getName().equals(item)) {
+				userdir = temp;
+				isDir = false;
 			}
 		}
 
+		if (isDir) {
 		if (userdir != null && type == 0) {
 			data.putString("userdir", userdir.getAbsolutePath());
 
@@ -113,6 +123,21 @@ public class MultiUserFileAdapter extends ArrayAdapter<File> {
 				list = newFiles;
 				notifyDataSetChanged();
 			}
+		}
+		} else {
+			Intent fileintent = new Intent(Intent.ACTION_VIEW);
+			Uri uri = Uri.fromFile(userdir.getAbsoluteFile()); 
+	        String url = uri.toString();
+
+	        //grab mime
+	        String newMimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(
+	                MimeTypeMap.getFileExtensionFromUrl(url));
+	        fileintent.setDataAndType(uri, newMimeType);
+	        try {
+	            context.startActivity(fileintent);
+	        } catch (ActivityNotFoundException e) {
+	            Log.e("tag", "No activity can handle picking a file. Showing alternatives.");
+	        }
 		}
 	}
 }
