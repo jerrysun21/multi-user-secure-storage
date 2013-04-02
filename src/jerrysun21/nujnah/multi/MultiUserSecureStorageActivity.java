@@ -14,17 +14,13 @@ import android.app.Dialog;
 import android.content.Intent;
 import android.nfc.NdefMessage;
 import android.nfc.NfcAdapter;
-import android.opengl.Visibility;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Parcelable;
-import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -43,6 +39,7 @@ public class MultiUserSecureStorageActivity extends Activity {
     MultiUserFileAdapter adapter;
     ListView lv;
     File appDir;
+    String nfcData;
     
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -284,7 +281,10 @@ public class MultiUserSecureStorageActivity extends Activity {
         // only one message sent during the beam
         NdefMessage msg = (NdefMessage) rawMsgs[0];
         // record 0 contains the MIME type, record 1 is the AAR, if present
-        tvMainText.setText(new String(msg.getRecords()[0].getPayload()));
+        String password = new String(msg.getRecords()[0].getPayload());
+        password = password.substring(password.indexOf("jerry://") + 8, password.indexOf('Q', password.indexOf("jerry://")));
+        tvMainText.setText(password);
+        nfcData = password;
     }
     
     public void launchEmit(View v) {
