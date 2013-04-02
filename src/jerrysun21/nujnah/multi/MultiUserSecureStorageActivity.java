@@ -287,9 +287,4 @@ public class MultiUserSecureStorageActivity extends Activity {
         nfcData = password;
     }
     
-    public void launchEmit(View v) {
-    	Intent intent = new Intent(this, PasswordEmitActivity.class);
-    	startActivity(intent);
-    }
-
 }

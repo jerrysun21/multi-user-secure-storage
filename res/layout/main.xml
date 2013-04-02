@@ -16,15 +16,6 @@
         android:text="Tap NFC"
         android:focusable="false"
         />
-    
-        
-    <Button
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:onClick="launchEmit"
-        android:text="Launch Password Emitter"
-                android:focusable="false"
-        />
     <Button
         android:id="@+id/main_create_user"
         android:layout_width="match_parent"
