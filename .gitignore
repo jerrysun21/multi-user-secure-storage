@@ -4,4 +4,4 @@ proguard.cfg
 bin/
 *.classpath
 project.properties
-
+.DS_Store

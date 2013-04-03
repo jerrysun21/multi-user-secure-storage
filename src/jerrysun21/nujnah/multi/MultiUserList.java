@@ -8,26 +8,27 @@ import java.util.ArrayList;
 
 public class MultiUserList {
 	
-	public static ArrayList<MultiUserInfo> users = new ArrayList<MultiUserInfo>();
+	public ArrayList<MultiUserInfo> users = new ArrayList<MultiUserInfo>();
 	
 	private static MultiUserList instance;
 	
 	public static synchronized MultiUserList getInstance() {
 		if (instance == null) {
-			instance = new MultiUserList();
+			return null;
 		}
 		return instance;
 	}
 	
-	public static synchronized MultiUserList getInstance() {
+	// this getInstance always needs to be called at least once before the other getInstance
+	public static synchronized MultiUserList getInstance(File userFile) {
 		if (instance == null) {
-			instance = new MultiUserList();
+			instance = new MultiUserList(userFile);
 		}
 		return instance;
 	}
 	
-	private MultiUserList() {
-		users = getUserList(userFile)
+	private MultiUserList(File userFile) {
+		users = getUserList(userFile);
 	}
 	
 	// Probably move this into another thread, would get slow once there are a

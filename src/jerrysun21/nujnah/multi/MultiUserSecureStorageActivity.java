@@ -138,6 +138,7 @@ public class MultiUserSecureStorageActivity extends Activity {
 			}
 
 			// Build list of users
+			ArrayList<MultiUserInfo> users = MultiUserList.getInstance(userFile).users;
 			users = getUserList(userFile);
 			if (users.size() == 0) {
 				Toast.makeText(getApplicationContext(),
@@ -309,6 +310,7 @@ public class MultiUserSecureStorageActivity extends Activity {
 				btnTapNFC.setVisibility(View.VISIBLE);
 
 			// Refresh the user list
+			ArrayList<MultiUserInfo> users = MultiUserList.getInstance().users;
 			users = getUserList(userList);
 
 			if (users.size() > 0

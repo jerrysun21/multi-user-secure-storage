@@ -214,10 +214,11 @@ public class MultiUserFileAdapter extends ArrayAdapter<File> {
 						.getContentResolver(), Secure.ANDROID_ID);
 				boolean validated = false;
 
-				for (int i = 0; i < MultiUserSecureStorageActivity.users.size(); i++) {
-					if (MultiUserSecureStorageActivity.users.get(i).getUserId()
+				ArrayList<MultiUserInfo> users = MultiUserList.getInstance().users;
+				for (int i = 0; i < users.size(); i++) {
+					if (users.get(i).getUserId()
 							.equals(username))
-						user = MultiUserSecureStorageActivity.users.get(i);
+						user = users.get(i);
 				}
 				
 				Log.d("login", "password: " + pw);
