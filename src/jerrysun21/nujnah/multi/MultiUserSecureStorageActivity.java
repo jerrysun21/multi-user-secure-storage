@@ -32,7 +32,7 @@ public class MultiUserSecureStorageActivity extends Activity {
 
 	final String strAppDir = "jerrysun21.nujnah.multi";
 	final String strUserFile = "users";
-	ArrayList<MultiUserInfo> users = new ArrayList<MultiUserInfo>();
+	public static ArrayList<MultiUserInfo> users = new ArrayList<MultiUserInfo>();
 	Button btnTapNFC;
 	Button btnCreateUser;
 	Button btnEncrypt;
@@ -41,7 +41,7 @@ public class MultiUserSecureStorageActivity extends Activity {
 	MultiUserFileAdapter adapter;
 	ListView lv;
 	File appDir;
-	String nfcData;
+	public static String nfcData;
 	String password;
 
 	@Override
@@ -328,6 +328,7 @@ public class MultiUserSecureStorageActivity extends Activity {
 	public void onResume() {
 		super.onResume();
 		// Check to see that the Activity started due to an Android Beam
+		Log.d("NFC", "nfc? " + NfcAdapter.ACTION_NDEF_DISCOVERED.equals(getIntent().getAction()));
 		if (NfcAdapter.ACTION_NDEF_DISCOVERED.equals(getIntent().getAction())) {
 			processIntent(getIntent());
 		}
@@ -351,4 +352,5 @@ public class MultiUserSecureStorageActivity extends Activity {
 		Log.d("NFC", "NFC msg received: " + nfcData);
 	}
 
+	
 }

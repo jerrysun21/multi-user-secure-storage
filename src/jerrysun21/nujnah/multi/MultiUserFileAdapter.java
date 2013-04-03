@@ -12,12 +12,14 @@ import javax.crypto.CipherInputStream;
 import javax.crypto.spec.SecretKeySpec;
 
 import android.app.Activity;
+import android.app.Dialog;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.Settings.Secure;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -25,6 +27,8 @@ import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.webkit.MimeTypeMap;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 
 public class MultiUserFileAdapter extends ArrayAdapter<File> {
@@ -40,7 +44,6 @@ public class MultiUserFileAdapter extends ArrayAdapter<File> {
 			List<File> objects) {
 		this(context, textViewResourceId, objects, 0, null);
 	}
-	
 
 	public MultiUserFileAdapter(Context context, int textViewResourceId,
 			List<File> objects, int type, File CurrentDir) {
@@ -64,7 +67,8 @@ public class MultiUserFileAdapter extends ArrayAdapter<File> {
 		tv.setText(list.get(position).getName());
 
 		File currentFile = list.get(position);
-		Log.d("adapter", "Item: " + currentFile.getName() + " Is directory: " + currentFile.isDirectory());
+		Log.d("adapter", "Item: " + currentFile.getName() + " Is directory: "
+				+ currentFile.isDirectory());
 		if (currentFile.isDirectory())
 			tv.setTypeface(Typeface.DEFAULT_BOLD);
 		else
@@ -110,14 +114,8 @@ public class MultiUserFileAdapter extends ArrayAdapter<File> {
 
 		if (isDir) {
 			if (userdir != null && type == 0) {
-				data.putString("userdir", userdir.getAbsolutePath());
-				if (password != null) {
-					data.putString("password", password);
-				}
+				// Login
 
-				Intent intent = new Intent(context, UserFolderBrowser.class);
-				intent.putExtras(data);
-				context.startActivity(intent);
 			} else if (userdir != null && type == 1) {
 				// navigate to folder instead
 				if (userdir.getAbsolutePath().equals(
@@ -140,8 +138,8 @@ public class MultiUserFileAdapter extends ArrayAdapter<File> {
 			}
 		} else {
 			try {
-				String decryptedData = SecurityHelper.decryptFile(userdir.getAbsolutePath(),
-						password);
+				String decryptedData = SecurityHelper.decryptFile(
+						userdir.getAbsolutePath(), password);
 				writeTempFile(userdir.getAbsolutePath() + ".security",
 						decryptedData);
 				userdir = new File(userdir.getAbsolutePath() + ".security");
@@ -179,8 +177,63 @@ public class MultiUserFileAdapter extends ArrayAdapter<File> {
 		fos.flush();
 		fos.close();
 	}
-	
+
 	public File getCurrentDir() {
 		return CurrentDir;
+	}
+
+	private void showLoginDialog(final String username, File userdir) {
+		final Dialog loginDialog = new Dialog((Activity) context);
+		Button btnOk;
+		Button btnCancel;
+		TextView tvUser;
+
+		loginDialog.setTitle("Login");
+		loginDialog.setContentView(R.layout.dialog_login);
+
+		btnOk = (Button) loginDialog.findViewById(R.id.login_OK);
+		btnCancel = (Button) loginDialog.findViewById(R.id.login_Cancel);
+
+		tvUser = (TextView) loginDialog.findViewById(R.id.login_id);
+		tvUser.setText(username);
+
+		btnOk.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				MultiUserInfo user;
+				Activity activity = (Activity) context;
+				EditText etPassword = (EditText) loginDialog
+						.findViewById(R.id.login_pw);
+				String pw = etPassword.getText().toString();
+				Bundle data = new Bundle();
+
+				pw += Secure.getString(activity.getBaseContext()
+						.getContentResolver(), Secure.ANDROID_ID);
+				pw += MultiUserSecureStorageActivity.nfcData;
+				boolean validated = false;
+
+				for (int i = 0; i < MultiUserSecureStorageActivity.users.size(); i++) {
+					if (MultiUserSecureStorageActivity.users.get(i).getUserId()
+							.equals(username))
+						user = MultiUserSecureStorageActivity.users.get(i);
+				}
+				
+				Log.d("login", "password: " + pw);
+				
+				if (MultiHelper.toSHA1(pw).equals(user.getPassword())) {
+
+					// Send password
+					data.putString("userdir", userdir.getAbsolutePath());
+					if (password != null) {
+						data.putString("password", password);
+					}
+
+					Intent intent = new Intent(context, UserFolderBrowser.class);
+					intent.putExtras(data);
+					context.startActivity(intent);
+				}
+			}
+		});
 	}
 }

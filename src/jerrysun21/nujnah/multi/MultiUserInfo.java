@@ -16,7 +16,7 @@ public class MultiUserInfo {
 	}
 	
 	private Boolean checkCharacters(String input) {
-		char[] invalidChar = {'/', '#', '\\'};
+		char[] invalidChar = {'/', '#', '\\', ' '};
 		
 		for (int i = 0; i < invalidChar.length; i++) {
 			if (input.indexOf(invalidChar[i]) != -1)
