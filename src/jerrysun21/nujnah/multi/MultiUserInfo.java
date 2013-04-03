@@ -6,7 +6,12 @@ public class MultiUserInfo {
 	private String userId;
 	private String password;
 	private String NFCToken;
+	private String passwordRaw;
 	
+	public void setPasswordRaw(String passwordRaw) {
+		this.passwordRaw = passwordRaw;
+	}
+
 	public MultiUserInfo(String userId, String password) {
 		this(userId, password, "");
 	}
@@ -37,10 +42,10 @@ public class MultiUserInfo {
 	
 	// Length and invalid characters
 	private Boolean checkPassword() {
-		if (!checkCharacters(password))
+		if (!checkCharacters(passwordRaw))
 			return false;
 		
-		if (password.length() < 6)
+		if (passwordRaw.length() < 6)
 			return false;
 		
 		return true;

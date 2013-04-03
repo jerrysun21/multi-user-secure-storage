@@ -262,11 +262,12 @@ public class MultiUserSecureStorageActivity extends Activity {
 					String nfc = "NFC"; // Temporary
 					MultiUserInfo newUser = new MultiUserInfo(username,
 							password, nfc);
+					newUser.setPasswordRaw(passwordEdit.getText().toString());
 					if (newUser.validateInfo())
 						createUser(newUser, appDir);
 					else
 						Toast.makeText(MultiUserSecureStorageActivity.this,
-								"Invalid username/password", Toast.LENGTH_SHORT)
+								"Invalid characters in username/password", Toast.LENGTH_SHORT)
 								.show();
 				}
 				dialog.dismiss();
