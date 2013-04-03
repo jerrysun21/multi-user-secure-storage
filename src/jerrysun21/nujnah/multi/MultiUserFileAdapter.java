@@ -198,15 +198,16 @@ public class MultiUserFileAdapter extends ArrayAdapter<File> {
 			public void onClick(View v) {
 				MultiUserInfo user = new MultiUserInfo("fake", "", "");
 				Activity activity = (Activity) context;
+				Bundle data = new Bundle();
 				EditText etPassword = (EditText) loginDialog
 						.findViewById(R.id.login_pw);
+				
 				String pw = etPassword.getText().toString();
-				Bundle data = new Bundle();
 
 				pw += MultiUserList.getInstance().nfcData;
+
 				pw += Secure.getString(activity.getBaseContext()
 						.getContentResolver(), Secure.ANDROID_ID);
-				boolean validated = false;
 
 				ArrayList<MultiUserInfo> users = MultiUserList.getInstance().users;
 				for (int i = 0; i < users.size(); i++) {
@@ -220,8 +221,7 @@ public class MultiUserFileAdapter extends ArrayAdapter<File> {
 				Log.d("jerry", "password hashed: " + user.getPassword());
 				Log.d("jerry", "password entred: " + MultiHelper.toSHA1(pw));
 				
-				
-				if (MultiHelper.toSHA1(pw).equals(user.getPassword())) {
+				if (MultiHelper.toSHA1(pw).equals(user.getRawPassword())) {
 
 					// Send password
 					data.putString("username", username);
