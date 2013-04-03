@@ -111,9 +111,7 @@ public class MultiUserFileAdapter extends ArrayAdapter<File> {
 		if (isDir) {
 			if (userdir != null && type == 0) {
 				data.putString("userdir", userdir.getAbsolutePath());
-				Log.d("jerry", "==================================================\npassword being passed in " + password);
 				if (password != null) {
-					Log.d("jerry", "==================================================\npassword being passed in " + password);
 					data.putString("password", password);
 				}
 

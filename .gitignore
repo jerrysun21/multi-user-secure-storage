@@ -2,3 +2,4 @@ gen/
 proguard.cfg
 bin/
 *.classpath
+project.properties

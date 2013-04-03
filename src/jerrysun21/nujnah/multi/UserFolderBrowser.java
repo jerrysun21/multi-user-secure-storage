@@ -4,7 +4,9 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -50,7 +52,9 @@ public class UserFolderBrowser extends Activity {
 			@Override
 			public void onClick(View v) {
 				File current = adapter.getCurrentDir();
-				File userList = new File(adapter.getCurrentDir(), Integer.toString(adapter.getCurrentDir().listFiles().length) + ".txt");
+				File userList = new File(adapter.getCurrentDir(), Integer
+						.toString(adapter.getCurrentDir().listFiles().length)
+						+ ".txt");
 				try {
 					BufferedWriter writer = new BufferedWriter(new FileWriter(
 							userList, true));
@@ -59,10 +63,9 @@ public class UserFolderBrowser extends Activity {
 					writer.newLine();
 					writer.close();
 				} catch (IOException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-				
+
 				adapter.clear();
 				File[] files = current.listFiles();
 				for (int i = 0; i < files.length; i++)
@@ -70,7 +73,6 @@ public class UserFolderBrowser extends Activity {
 				adapter.notifyDataSetChanged();
 			}
 		});
-		
 
 		if (data != null) {
 			strUserDir = data.getString("userdir");
@@ -78,7 +80,8 @@ public class UserFolderBrowser extends Activity {
 		}
 		UserDir = new File(strUserDir);
 
-		// TODO: generate a checksum for all the files in the user's directory. If it matches then show
+		// TODO: generate a checksum for all the files in the user's directory.
+		// If it matches then show
 
 		if (UserDir.listFiles().length > 0) {
 			status.setVisibility(View.GONE);
@@ -88,15 +91,22 @@ public class UserFolderBrowser extends Activity {
 		}
 
 		showFileList(UserDir);
-		
+
 		Button logout = (Button) findViewById(R.id.ufb_logout);
 		logout.setOnClickListener(new OnClickListener() {
-			
+
 			@Override
 			public void onClick(View v) {
-				// TODO: logout the user
 				Log.d("jerry", "should be logging out");
-				
+				byte[] checksum = generateChecksum(strUserDir);
+				try {
+					String s = new String(checksum, "UTF-8");
+					Log.d("jerry", "Checksum of all the files: " + s);
+					// TODO: save the checksum somewhere
+				} catch (UnsupportedEncodingException e) {
+					e.printStackTrace();
+				}
+				finish();
 			}
 		});
 	}
@@ -108,7 +118,7 @@ public class UserFolderBrowser extends Activity {
 		adapter.setPassword(password);
 		encryptFiles(strUserDir);
 	}
-	
+
 	// TODO: on destroy, generate checksum for use next time
 
 	@Override
@@ -141,6 +151,45 @@ public class UserFolderBrowser extends Activity {
 		lv.setAdapter(adapter);
 	}
 
+	public byte[] generateChecksum(String userdir) {
+		File currentFile = new File(userdir);
+		List<File> fileList = Arrays.asList(currentFile.listFiles());
+		byte[][] checksum = new byte[fileList.size()][];
+		byte[] calculatedChecksum = new byte[0];
+
+		for (int i = 0; i < fileList.size(); i++) {
+			File temp = fileList.get(i);
+			if (temp.isDirectory()) {
+				checksum[i] = generateChecksum(temp.getAbsolutePath());
+			} else if (temp.isFile()) {
+				try {
+					String data = readFileData(temp);
+					MessageDigest digest1 = MessageDigest.getInstance("SHA");
+					digest1.update(data.getBytes("UTF-8"));
+					checksum[i] = digest1.digest();
+				} catch (Exception e) {
+					Log.e("jerry", "error reading file");
+					e.printStackTrace();
+				}
+			}
+		}
+
+		try {
+			for (int i = 0; i < fileList.size(); i++) {
+				byte[] tempChecksum = new byte[calculatedChecksum.length
+						+ checksum[i].length];
+				MessageDigest digest1;
+				digest1 = MessageDigest.getInstance("SHA");
+				digest1.update(tempChecksum);
+				calculatedChecksum = digest1.digest();
+			}
+		} catch (NoSuchAlgorithmException e) {
+			e.printStackTrace();
+		}
+
+		return calculatedChecksum;
+	}
+
 	public void encryptFiles(String userdir) {
 		File currentFile = new File(userdir);
 		List<File> fileList = Arrays.asList(currentFile.listFiles());
@@ -156,9 +205,10 @@ public class UserFolderBrowser extends Activity {
 						".security")) {
 					try {
 						String data = readFileData(temp);
-						String newFileName = temp.getAbsolutePath().substring(0,
-								temp.getAbsolutePath().lastIndexOf('.'));
-						Log.d("jerry", "Data: " + data + "\nName: " + newFileName + "\nPassword: " + password);
+						String newFileName = temp.getAbsolutePath().substring(
+								0, temp.getAbsolutePath().lastIndexOf('.'));
+						Log.d("jerry", "Data: " + data + "\nName: "
+								+ newFileName + "\nPassword: " + password);
 						encryptFile(newFileName, data, password);
 						temp.delete();
 					} catch (Exception e) {
