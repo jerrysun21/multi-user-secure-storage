@@ -136,7 +136,8 @@ public class MultiUserSecureStorageActivity extends Activity {
 			}
 
 			// Build list of users
-			ArrayList<MultiUserInfo> users = MultiUserList.getInstance(userFile).users;
+			ArrayList<MultiUserInfo> users = MultiUserList
+					.getInstance(userFile).users;
 			users = getUserList(userFile);
 			if (users.size() == 0) {
 				Toast.makeText(getApplicationContext(),
@@ -168,8 +169,8 @@ public class MultiUserSecureStorageActivity extends Activity {
 
 			@Override
 			public void onClick(View v) {
-				password = SecurityHelper.setPassword("password", MultiUserList.getInstance().nfcData,
-						getBaseContext());
+				password = SecurityHelper.setPassword("password",
+						MultiUserList.getInstance().nfcData, getBaseContext());
 				adapter.setPassword(password);
 
 				String dataToEncrypt = "asldkfjaw;eghaoiwebnaowieh091y2509r8q2y389tghawoibuv;boiwye98rthq23ngv9pa8w3hbnp9wun3f9a8wheg[a9ubnaw9[8hytr-9182hrtpi1faqwfdcig";
@@ -255,9 +256,9 @@ public class MultiUserSecureStorageActivity extends Activity {
 				if (MultiUserList.getInstance().nfcData != null) {
 					String username = usernameEdit.getText().toString();
 					// Need to verify password length/strength
-					String password = password = SecurityHelper.setPassword(
-							username, passwordEdit.getText().toString(),
-							MultiUserSecureStorageActivity.this);
+					String password = SecurityHelper.setPassword(passwordEdit
+							.getText().toString(), passwordEdit.getText()
+							.toString(), MultiUserSecureStorageActivity.this);
 					String nfc = "NFC"; // Temporary
 					MultiUserInfo newUser = new MultiUserInfo(username,
 							password, nfc);
@@ -295,6 +296,7 @@ public class MultiUserSecureStorageActivity extends Activity {
 			// Append and add '-' after each attribute
 			writer.append(newUser.getUserId());
 			writer.append("-");
+			Log.d("usersfile", "password: " + newUser.getPassword());
 			writer.append(newUser.getPassword());
 			writer.append("-");
 			writer.append(newUser.getNFCToken());
@@ -309,7 +311,7 @@ public class MultiUserSecureStorageActivity extends Activity {
 
 			// Refresh the user list
 			ArrayList<MultiUserInfo> users = MultiUserList.getInstance().users;
-			users = getUserList(userList);
+			MultiUserList.getInstance().users = getUserList(userList);
 
 			if (users.size() > 0
 					&& btnCreateUser.getVisibility() != View.VISIBLE)

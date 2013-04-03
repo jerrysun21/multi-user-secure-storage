@@ -1,5 +1,7 @@
 package jerrysun21.nujnah.multi;
 
+import android.util.Log;
+
 public class MultiUserInfo {
 	private String userId;
 	private String password;
@@ -62,6 +64,9 @@ public class MultiUserInfo {
 	// Returns hashed password
 	public String getPassword() {
 		return MultiHelper.toSHA1(password);
+	}
+	public String getRawPassword() {
+		return password;
 	}
 	public void setPassword(String password) {
 		this.password = password;
