@@ -53,7 +53,7 @@ public class UserFolderBrowser extends Activity {
 			@Override
 			public void onClick(View v) {
 				// TODO Auto-generated method stub
-				//createDirectory();
+				createDirectory();
 			}
 		});
 

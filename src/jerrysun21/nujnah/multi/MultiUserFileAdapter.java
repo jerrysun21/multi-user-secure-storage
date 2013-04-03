@@ -59,10 +59,12 @@ public class MultiUserFileAdapter extends ArrayAdapter<File> {
 		if (view == null)
 			view = inflater.inflate(lvResource, parent, false);
 
+		File currentFile = getItem(position);
+		
 		TextView tv = (TextView) view.findViewById(R.id.item_name);
-		tv.setText(list.get(position).getName());
+		tv.setText(currentFile.getName());
 
-		File currentFile = list.get(position);
+		
 		Log.d("adapter", "Item: " + currentFile.getName() + " Is directory: "
 				+ currentFile.isDirectory());
 		if (currentFile.isDirectory())
@@ -251,7 +253,16 @@ public class MultiUserFileAdapter extends ArrayAdapter<File> {
 								Toast.LENGTH_SHORT).show();
 						loginDialog.dismiss();
 					}
-
+					// Send password
+					data.putString("username", username);
+					data.putString("userdir", userdir.getAbsolutePath());
+					data.putString("password", pw);
+					
+					loginDialog.dismiss();
+					
+					Intent intent = new Intent(context, UserFolderBrowser.class);
+					intent.putExtras(data);
+					context.startActivity(intent);
 				} else {
 					Toast.makeText(activity, "Incorrect credentials",
 							Toast.LENGTH_SHORT).show();
@@ -270,5 +281,9 @@ public class MultiUserFileAdapter extends ArrayAdapter<File> {
 		});
 
 		loginDialog.show();
+	}
+	
+	public void setList(List<File> list) {
+		this.list = list;
 	}
 }

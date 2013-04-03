@@ -32,9 +32,7 @@ public class MultiUserSecureStorageActivity extends Activity {
 
 	final String strAppDir = "jerrysun21.nujnah.multi";
 	final String strUserFile = "users";
-	Button btnTapNFC;
 	Button btnCreateUser;
-	Button btnEncrypt;
 	// TextView for the line of text in the main activity
 	TextView tvMainText;
 	MultiUserFileAdapter adapter;
@@ -47,13 +45,11 @@ public class MultiUserSecureStorageActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
 
-		btnTapNFC = (Button) findViewById(R.id.main_tap_NFC);
 		btnCreateUser = (Button) findViewById(R.id.main_create_user);
 		tvMainText = (TextView) findViewById(R.id.main_text);
 		lv = (ListView) findViewById(R.id.user_list);
 
 		tvMainText.setVisibility(View.GONE);
-		btnTapNFC.setVisibility(View.GONE);
 		btnCreateUser.setVisibility(View.GONE);
 
 		btnCreateUser.setOnClickListener(new OnClickListener() {
@@ -147,7 +143,6 @@ public class MultiUserSecureStorageActivity extends Activity {
 				tvMainText.setVisibility(View.VISIBLE);
 				tvMainText.setText("No users found, please create a new user");
 			} else {
-				btnTapNFC.setVisibility(View.VISIBLE);
 				btnCreateUser.setVisibility(View.VISIBLE);
 			}
 
@@ -164,41 +159,6 @@ public class MultiUserSecureStorageActivity extends Activity {
 			lv.setAdapter(adapter);
 			lv.requestFocus();
 		}
-		btnEncrypt = (Button) findViewById(R.id.main_encrypt);
-		btnEncrypt.setOnClickListener(new OnClickListener() {
-
-			@Override
-			public void onClick(View v) {
-				password = SecurityHelper.setPassword("password",
-						MultiUserList.getInstance().nfcData, getBaseContext());
-				adapter.setPassword(password);
-
-				String dataToEncrypt = "asldkfjaw;eghaoiwebnaowieh091y2509r8q2y389tghawoibuv;boiwye98rthq23ngv9pa8w3hbnp9wun3f9a8wheg[a9ubnaw9[8hytr-9182hrtpi1faqwfdcig";
-
-				try {
-					SecurityHelper.encryptFile(
-							"/sdcard/data/jerrysun21.nujnah.multi/hello",
-							dataToEncrypt, password);
-					String s = SecurityHelper.decryptFile(
-							"/sdcard/data/jerrysun21.nujnah.multi/hello",
-							password);
-
-					Log.d("jerry",
-							dataToEncrypt + "\t" + dataToEncrypt.length()
-									+ "\n" + s + "\t" + s.length());
-					int trimLength = s.charAt(s.length() - 1);
-					Log.d("jerry", "trim length is: " + trimLength);
-					s = s.substring(0, s.length() - trimLength);
-					Log.d("jerry", "trimmed file " + s);
-					if (s.equals(dataToEncrypt)) {
-						Log.d("jerry", "fuck padding");
-					}
-				} catch (Exception e) {
-					Log.e("jerry", "BARGFFFFFFFFF");
-					e.printStackTrace();
-				}
-			}
-		});
 	}
 
 	private File getFile(String directoryName, File[] fileList) {
@@ -307,8 +267,6 @@ public class MultiUserSecureStorageActivity extends Activity {
 			// Display new list of users
 			if (tvMainText.getVisibility() == View.VISIBLE)
 				tvMainText.setVisibility(View.GONE);
-			if (btnTapNFC.getVisibility() == View.GONE)
-				btnTapNFC.setVisibility(View.VISIBLE);
 
 			// Refresh the user list
 			ArrayList<MultiUserInfo> users = MultiUserList.getInstance().users;
