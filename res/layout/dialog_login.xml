@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical" >
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        >
+        <TextView
+            android:layout_width="0dp"
+            android:layout_weight="0.4"
+            android:layout_height="wrap_content"
+            style="@style/CreateUserDialogText"
+            android:text="Login ID:"
+            />
+        <TextView
+            android:id="@+id/login_id"
+            android:layout_width="0dp"
+            android:layout_weight="0.6"
+            android:layout_height="wrap_content"
+            style="@style/CreateUserDialogText"
+            />
+    </LinearLayout>
+    
+    <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            style="@style/CreateUserDialogText"
+            android:text="Password:"
+            />
+    
+    <EditText
+        android:id="@+id/login_pw"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        />
+    
+        <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <Button
+            android:id="@+id/login_OK"
+            android:layout_width="0px"
+            android:layout_weight="0.5"
+            android:layout_height="wrap_content"
+            android:text="OK" />
+        <Button
+            android:id="@+id/login_Cancel"
+            android:layout_weight="0.5"
+            android:layout_width="0px"
+            android:layout_height="wrap_content"
+            android:text="Cancel" />
+    </LinearLayout>
+    
+
+</LinearLayout>
