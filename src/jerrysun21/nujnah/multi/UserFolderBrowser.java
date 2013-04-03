@@ -182,7 +182,7 @@ public class UserFolderBrowser extends Activity {
 				EditText etFileName = (EditText)createFileDialog.findViewById(R.id.cf_file_name);
 				EditText etContent = (EditText)createFileDialog.findViewById(R.id.cf_data);
 				File currDir = adapter.getCurrentDir();
-				File newFile = new File(currDir, etFileName.getText().toString() + ".txt.security");
+				File newFile = new File(currDir, etFileName.getText().toString() + ".txt");
 				try {
 					SecurityHelper.encryptFile(newFile.getAbsolutePath(), etContent.getText().toString(), password);
 					Toast.makeText(UserFolderBrowser.this, "Created file", Toast.LENGTH_SHORT).show();

@@ -201,7 +201,7 @@ public class MultiUserFileAdapter extends ArrayAdapter<File> {
 				Bundle data = new Bundle();
 				EditText etPassword = (EditText) loginDialog
 						.findViewById(R.id.login_pw);
-				
+
 				String pw = etPassword.getText().toString();
 
 				pw += MultiUserList.getInstance().nfcData;
@@ -211,44 +211,42 @@ public class MultiUserFileAdapter extends ArrayAdapter<File> {
 
 				ArrayList<MultiUserInfo> users = MultiUserList.getInstance().users;
 				for (int i = 0; i < users.size(); i++) {
-					if (users.get(i).getUserId()
-							.equals(username))
+					if (users.get(i).getUserId().equals(username))
 						user = users.get(i);
 				}
-				
+
 				Log.d("login", "password: " + pw);
 				Log.d("jerry", "password rawwed: " + pw);
 				Log.d("jerry", "password hashed: " + user.getPassword());
 				Log.d("jerry", "password entred: " + MultiHelper.toSHA1(pw));
-				
+
 				if (MultiHelper.toSHA1(pw).equals(user.getRawPassword())) {
 
 					// Send password
 					data.putString("username", username);
 					data.putString("userdir", userdir.getAbsolutePath());
-					if (password != null) {
-						data.putString("password", pw);
-					}
+					data.putString("password", pw);
 
 					Intent intent = new Intent(context, UserFolderBrowser.class);
 					intent.putExtras(data);
 					context.startActivity(intent);
 				} else {
-					Toast.makeText(activity, "Incorrect credentials", Toast.LENGTH_SHORT).show();
+					Toast.makeText(activity, "Incorrect credentials",
+							Toast.LENGTH_SHORT).show();
 					loginDialog.dismiss();
 				}
 			}
 		});
-		
+
 		btnCancel.setOnClickListener(new OnClickListener() {
-			
+
 			@Override
 			public void onClick(View v) {
 				loginDialog.dismiss();
-				
+
 			}
 		});
-		
+
 		loginDialog.show();
 	}
 }
