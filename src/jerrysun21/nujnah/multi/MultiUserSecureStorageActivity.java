@@ -4,17 +4,10 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.security.MessageDigest;
 import java.util.ArrayList;
-
-import javax.crypto.Cipher;
-import javax.crypto.CipherInputStream;
-import javax.crypto.CipherOutputStream;
-import javax.crypto.spec.SecretKeySpec;
 
 import android.app.Activity;
 import android.app.Dialog;
@@ -24,7 +17,6 @@ import android.nfc.NfcAdapter;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Parcelable;
-import android.provider.Settings.Secure;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -177,11 +169,7 @@ public class MultiUserSecureStorageActivity extends Activity {
 
 			@Override
 			public void onClick(View v) {
-				password = "password";
-				password += nfcData;
-				password += Secure.getString(getBaseContext()
-						.getContentResolver(), Secure.ANDROID_ID);
-				Log.d("jerry", "password is " + password);
+				password = SecurityHelper.setPassword("password", nfcData, getBaseContext());
 				adapter.setPassword(password);
 
 				String dataToEncrypt = "asldkfjaw;eghaoiwebnaowieh091y2509r8q2y389tghawoibuv;boiwye98rthq23ngv9pa8w3hbnp9wun3f9a8wheg[a9ubnaw9[8hytr-9182hrtpi1faqwfdcig";

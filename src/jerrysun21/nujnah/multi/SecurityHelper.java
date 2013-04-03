@@ -13,6 +13,8 @@ import javax.crypto.CipherInputStream;
 import javax.crypto.CipherOutputStream;
 import javax.crypto.spec.SecretKeySpec;
 
+import android.content.Context;
+import android.provider.Settings.Secure;
 import android.util.Log;
 
 public class SecurityHelper {
@@ -152,5 +154,14 @@ public class SecurityHelper {
 				}
 			}
 		}
+	}
+	
+	public static String setPassword(String user, String nfcData, Context context) {
+		String password = user;
+		password += nfcData;
+		password += Secure.getString(context
+				.getContentResolver(), Secure.ANDROID_ID);
+		Log.d("jerry", "password is " + password);
+		return password;
 	}
 }
