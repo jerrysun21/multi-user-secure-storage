@@ -13,9 +13,12 @@ import javax.crypto.CipherOutputStream;
 import javax.crypto.spec.SecretKeySpec;
 
 import android.app.Activity;
+import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -26,10 +29,12 @@ public class UserFolderBrowser extends Activity {
 	TextView status;
 	ListView lv;
 	String password;
+	Context context;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		context = this;
 		setContentView(R.layout.user_folder_browser);
 		Bundle data = getIntent().getExtras();
 		status = (TextView) findViewById(R.id.ufb_status_text);
@@ -50,6 +55,17 @@ public class UserFolderBrowser extends Activity {
 		}
 		
 		showFileList(UserDir);
+		
+		Button logout = (Button) findViewById(R.id.ufb_logout);
+		logout.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				// TODO: logout the user
+				Log.d("jerry", "should be logging out");
+				
+			}
+		});
 	}
 
 	@Override
@@ -61,6 +77,11 @@ public class UserFolderBrowser extends Activity {
 	}
 	
 	// TODO: on destroy, generate checksum for use next time
+
+	@Override
+	public void onBackPressed() {
+		// consume all back button presses
+	}
 
 	private ArrayList<File> populateFileList(File dir) {
 		if (!dir.isDirectory()) {
@@ -103,7 +124,7 @@ public class UserFolderBrowser extends Activity {
 						String data = readFileData(temp);
 						String newFileName = temp.getAbsolutePath().substring(0,
 								temp.getAbsolutePath().lastIndexOf('.'));
-						Log.d("jerry", "Data: " + data + "\nName: " + newFileName);
+						Log.d("jerry", "Data: " + data + "\nName: " + newFileName + "\nPassword: " + password);
 						encryptFile(newFileName, data, password);
 						temp.delete();
 					} catch (Exception e) {

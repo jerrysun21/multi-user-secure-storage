@@ -84,10 +84,11 @@ public class MultiUserSecureStorageActivity extends Activity {
 				// TODO: if password typed is wrong, don't launch intent, say wrong password/NFC combination
 				String item = ((TextView) arg1).getText().toString();
 				Bundle data = new Bundle();
+				Log.d("jerry", "==================================================\npassword being passed in " + password);
+				data.putString("password", password);
 				File userdir = getFile(item, appDir.listFiles());
 				if (userdir != null) {
 					data.putString("userdir", userdir.getAbsolutePath());
-					data.putString("password", password);
 					Intent intent = new Intent(
 							MultiUserSecureStorageActivity.this,
 							UserFolderBrowser.class);
@@ -177,6 +178,7 @@ public class MultiUserSecureStorageActivity extends Activity {
 				password += Secure.getString(getBaseContext()
 						.getContentResolver(), Secure.ANDROID_ID);
 				Log.d("jerry", "password is " + password);
+				adapter.setPassword(password);
 
 				String dataToEncrypt = "asldkfjaw;eghaoiwebnaowieh091y2509r8q2y389tghawoibuv;boiwye98rthq23ngv9pa8w3hbnp9wun3f9a8wheg[a9ubnaw9[8hytr-9182hrtpi1faqwfdcig";
 

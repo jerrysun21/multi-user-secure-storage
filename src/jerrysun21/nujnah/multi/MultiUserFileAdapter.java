@@ -33,7 +33,7 @@ public class MultiUserFileAdapter extends ArrayAdapter<File> {
 	private List<File> list;
 	private int lvResource;
 	private int type;
-	private String password;
+	private String password = null;
 
 	public MultiUserFileAdapter(Context context, int textViewResourceId,
 			List<File> objects) {
@@ -108,6 +108,11 @@ public class MultiUserFileAdapter extends ArrayAdapter<File> {
 		if (isDir) {
 			if (userdir != null && type == 0) {
 				data.putString("userdir", userdir.getAbsolutePath());
+				Log.d("jerry", "==================================================\npassword being passed in " + password);
+				if (password != null) {
+					Log.d("jerry", "==================================================\npassword being passed in " + password);
+					data.putString("password", password);
+				}
 
 				Intent intent = new Intent(context, UserFolderBrowser.class);
 				intent.putExtras(data);
@@ -156,6 +161,7 @@ public class MultiUserFileAdapter extends ArrayAdapter<File> {
 				}
 			} catch (Exception e) {
 				Log.e("jerry", "error reading file");
+				e.printStackTrace();
 			}
 		}
 	}
