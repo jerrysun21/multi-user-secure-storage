@@ -2,7 +2,6 @@ package jerrysun21.nujnah.multi;
 
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -158,20 +157,6 @@ public class UserFolderBrowser extends Activity {
 
 		lv.setAdapter(adapter);
 	}
-
-	private String readFileData(File file) throws Exception {
-		FileInputStream fis = new FileInputStream(file);
-
-		int size = (int) fis.getChannel().size();
-		byte[] data = new byte[size];
-		fis.read(data, 0, size);
-		Log.d("jerry", "reading all data " + size);
-		String s = new String(data, "UTF-8");
-		fis.close();
-
-		return s;
-	}
-
 	
 	private void createFile() {
 		final Dialog createFileDialog = new Dialog(this);

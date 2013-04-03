@@ -1,15 +1,9 @@
 package jerrysun21.nujnah.multi;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.crypto.Cipher;
-import javax.crypto.CipherInputStream;
-import javax.crypto.spec.SecretKeySpec;
 
 import android.app.Activity;
 import android.app.Dialog;
