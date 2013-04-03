@@ -17,6 +17,7 @@ import android.nfc.NfcAdapter;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Parcelable;
+import android.provider.Settings.Secure;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -169,15 +170,19 @@ public class MultiUserSecureStorageActivity extends Activity {
 
 			@Override
 			public void onClick(View v) {
-				password = SecurityHelper.setPassword("password", nfcData, getBaseContext());
+				password = SecurityHelper.setPassword("password", nfcData,
+						getBaseContext());
 				adapter.setPassword(password);
 
 				String dataToEncrypt = "asldkfjaw;eghaoiwebnaowieh091y2509r8q2y389tghawoibuv;boiwye98rthq23ngv9pa8w3hbnp9wun3f9a8wheg[a9ubnaw9[8hytr-9182hrtpi1faqwfdcig";
 
 				try {
-					SecurityHelper
-							.encryptFile("/sdcard/data/jerrysun21.nujnah.multi/hello", dataToEncrypt, password);
-					String s = SecurityHelper.decryptFile("/sdcard/data/jerrysun21.nujnah.multi/hello", password);
+					SecurityHelper.encryptFile(
+							"/sdcard/data/jerrysun21.nujnah.multi/hello",
+							dataToEncrypt, password);
+					String s = SecurityHelper.decryptFile(
+							"/sdcard/data/jerrysun21.nujnah.multi/hello",
+							password);
 
 					Log.d("jerry",
 							dataToEncrypt + "\t" + dataToEncrypt.length()
@@ -249,18 +254,22 @@ public class MultiUserSecureStorageActivity extends Activity {
 
 			@Override
 			public void onClick(View v) {
-				String username = usernameEdit.getText().toString();
-				// Need to verify password length/strength
-				String password = passwordEdit.getText().toString();
-				String nfc = "NFC"; // Temporary
-				MultiUserInfo newUser = new MultiUserInfo(username, password,
-						nfc);
-				if (newUser.validateInfo())
-					createUser(newUser, appDir);
-				else
-					Toast.makeText(MultiUserSecureStorageActivity.this,
-							"Invalid username/password", Toast.LENGTH_SHORT)
-							.show();
+				if (nfcData != null) {
+					String username = usernameEdit.getText().toString();
+					// Need to verify password length/strength
+					String password = password = SecurityHelper.setPassword(
+							username, passwordEdit.getText().toString(),
+							MultiUserSecureStorageActivity.this);
+					String nfc = "NFC"; // Temporary
+					MultiUserInfo newUser = new MultiUserInfo(username,
+							password, nfc);
+					if (newUser.validateInfo())
+						createUser(newUser, appDir);
+					else
+						Toast.makeText(MultiUserSecureStorageActivity.this,
+								"Invalid username/password", Toast.LENGTH_SHORT)
+								.show();
+				}
 				dialog.dismiss();
 			}
 		});
@@ -328,7 +337,10 @@ public class MultiUserSecureStorageActivity extends Activity {
 	public void onResume() {
 		super.onResume();
 		// Check to see that the Activity started due to an Android Beam
-		Log.d("NFC", "nfc? " + NfcAdapter.ACTION_NDEF_DISCOVERED.equals(getIntent().getAction()));
+		Log.d("NFC",
+				"nfc? "
+						+ NfcAdapter.ACTION_NDEF_DISCOVERED.equals(getIntent()
+								.getAction()));
 		if (NfcAdapter.ACTION_NDEF_DISCOVERED.equals(getIntent().getAction())) {
 			processIntent(getIntent());
 		}
@@ -352,5 +364,4 @@ public class MultiUserSecureStorageActivity extends Activity {
 		Log.d("NFC", "NFC msg received: " + nfcData);
 	}
 
-	
 }

@@ -30,6 +30,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class MultiUserFileAdapter extends ArrayAdapter<File> {
 
@@ -115,7 +116,7 @@ public class MultiUserFileAdapter extends ArrayAdapter<File> {
 		if (isDir) {
 			if (userdir != null && type == 0) {
 				// Login
-
+				showLoginDialog(item, userdir);
 			} else if (userdir != null && type == 1) {
 				// navigate to folder instead
 				if (userdir.getAbsolutePath().equals(
@@ -182,7 +183,7 @@ public class MultiUserFileAdapter extends ArrayAdapter<File> {
 		return CurrentDir;
 	}
 
-	private void showLoginDialog(final String username, File userdir) {
+	private void showLoginDialog(final String username, final File userdir) {
 		final Dialog loginDialog = new Dialog((Activity) context);
 		Button btnOk;
 		Button btnCancel;
@@ -201,16 +202,16 @@ public class MultiUserFileAdapter extends ArrayAdapter<File> {
 
 			@Override
 			public void onClick(View v) {
-				MultiUserInfo user;
+				MultiUserInfo user = new MultiUserInfo("fake", "", "");
 				Activity activity = (Activity) context;
 				EditText etPassword = (EditText) loginDialog
 						.findViewById(R.id.login_pw);
 				String pw = etPassword.getText().toString();
 				Bundle data = new Bundle();
 
+				pw += MultiUserSecureStorageActivity.nfcData;
 				pw += Secure.getString(activity.getBaseContext()
 						.getContentResolver(), Secure.ANDROID_ID);
-				pw += MultiUserSecureStorageActivity.nfcData;
 				boolean validated = false;
 
 				for (int i = 0; i < MultiUserSecureStorageActivity.users.size(); i++) {
@@ -232,8 +233,22 @@ public class MultiUserFileAdapter extends ArrayAdapter<File> {
 					Intent intent = new Intent(context, UserFolderBrowser.class);
 					intent.putExtras(data);
 					context.startActivity(intent);
+				} else {
+					Toast.makeText(activity, "Incorrect credentials", Toast.LENGTH_SHORT).show();
+					loginDialog.dismiss();
 				}
 			}
 		});
+		
+		btnCancel.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				loginDialog.dismiss();
+				
+			}
+		});
+		
+		loginDialog.show();
 	}
 }
