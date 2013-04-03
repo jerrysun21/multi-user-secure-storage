@@ -1,8 +1,15 @@
 package jerrysun21.nujnah.multi;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.crypto.Cipher;
+import javax.crypto.CipherInputStream;
+import javax.crypto.spec.SecretKeySpec;
 
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
@@ -26,16 +33,16 @@ public class MultiUserFileAdapter extends ArrayAdapter<File> {
 	private List<File> list;
 	private int lvResource;
 	private int type;
-	
+	private String password;
+
 	public MultiUserFileAdapter(Context context, int textViewResourceId,
 			List<File> objects) {
 		this(context, textViewResourceId, objects, 0);
-		// TODO Auto-generated constructor stub
 	}
+
 	public MultiUserFileAdapter(Context context, int textViewResourceId,
 			List<File> objects, int type) {
 		super(context, textViewResourceId, objects);
-		// TODO Auto-generated constructor stub
 		this.context = context;
 		this.list = objects;
 		this.lvResource = textViewResourceId;
@@ -62,7 +69,7 @@ public class MultiUserFileAdapter extends ArrayAdapter<File> {
 
 		if (position == 0 && type == 1) {
 			tv.setText("..");
-		} 
+		}
 
 		view.setOnClickListener(new OnClickListener() {
 
@@ -89,7 +96,7 @@ public class MultiUserFileAdapter extends ArrayAdapter<File> {
 				break;
 			} else if (item.equals("..")) {
 				if (i == 0) {
-					userdir = temp; 		// Going up a level
+					userdir = temp; // Going up a level
 					break;
 				}
 			} else if (temp.getName().equals(item)) {
@@ -99,44 +106,92 @@ public class MultiUserFileAdapter extends ArrayAdapter<File> {
 		}
 
 		if (isDir) {
-		if (userdir != null && type == 0) {
-			data.putString("userdir", userdir.getAbsolutePath());
+			if (userdir != null && type == 0) {
+				data.putString("userdir", userdir.getAbsolutePath());
 
-			Intent intent = new Intent(context, UserFolderBrowser.class);
-			intent.putExtras(data);
-			context.startActivity(intent);
-		} else if (userdir != null && type == 1) {
-			// navigate to folder instead
-			if (userdir.getAbsolutePath().equals("/storage/emulated/0/data/jerrysun21.nujnah.multi")) {
-				((Activity)context).finish();
-			} else {
-				clear();
-				File[] files = userdir.listFiles();
-				ArrayList<File> newFiles = new ArrayList<File>();
-				add(userdir.getParentFile());
-				newFiles.add(userdir.getParentFile());
-				for (int i = 0; i < files.length; i++) {
-					newFiles.add(files[i]);
-					add(files[i]);
+				Intent intent = new Intent(context, UserFolderBrowser.class);
+				intent.putExtras(data);
+				context.startActivity(intent);
+			} else if (userdir != null && type == 1) {
+				// navigate to folder instead
+				if (userdir.getAbsolutePath().equals(
+						"/storage/emulated/0/data/jerrysun21.nujnah.multi")) {
+					((Activity) context).finish();
+				} else {
+					clear();
+					File[] files = userdir.listFiles();
+					ArrayList<File> newFiles = new ArrayList<File>();
+					add(userdir.getParentFile());
+					newFiles.add(userdir.getParentFile());
+					for (int i = 0; i < files.length; i++) {
+						newFiles.add(files[i]);
+						add(files[i]);
+					}
+					list = newFiles;
+					notifyDataSetChanged();
 				}
-				list = newFiles;
-				notifyDataSetChanged();
+			}
+		} else {
+			try {
+				String decryptedData = decryptFile(userdir.getAbsolutePath(),
+						password);
+				writeTempFile(userdir.getAbsolutePath() + ".security",
+						decryptedData);
+				userdir = new File(userdir.getAbsolutePath() + ".security");
+
+				Intent fileintent = new Intent(Intent.ACTION_VIEW);
+				Uri uri = Uri.fromFile(userdir.getAbsoluteFile());
+				String url = uri.toString();
+
+				// grab mime
+				String newMimeType = MimeTypeMap.getSingleton()
+						.getMimeTypeFromExtension(
+								MimeTypeMap.getFileExtensionFromUrl(url));
+				fileintent.setDataAndType(uri, newMimeType);
+				try {
+					context.startActivity(fileintent);
+				} catch (ActivityNotFoundException e) {
+					Log.e("tag",
+							"No activity can handle picking a file. Showing alternatives.");
+				}
+			} catch (Exception e) {
+				Log.e("jerry", "error reading file");
 			}
 		}
-		} else {
-			Intent fileintent = new Intent(Intent.ACTION_VIEW);
-			Uri uri = Uri.fromFile(userdir.getAbsoluteFile()); 
-	        String url = uri.toString();
+	}
 
-	        //grab mime
-	        String newMimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(
-	                MimeTypeMap.getFileExtensionFromUrl(url));
-	        fileintent.setDataAndType(uri, newMimeType);
-	        try {
-	            context.startActivity(fileintent);
-	        } catch (ActivityNotFoundException e) {
-	            Log.e("tag", "No activity can handle picking a file. Showing alternatives.");
-	        }
-		}
+	public void setPassword(String password) {
+		this.password = password;
+	}
+
+	private String decryptFile(String fileName, String password)
+			throws Exception {
+		Cipher aes = Cipher.getInstance("AES/ECB/PKCS5Padding");
+		MessageDigest digest1 = MessageDigest.getInstance("SHA");
+		digest1.update(password.getBytes());
+		// AES requires a key with 128 bits (16 bytes)
+		SecretKeySpec key1 = new SecretKeySpec(digest1.digest(), 0, 16, "AES");
+
+		FileInputStream fis = new FileInputStream(fileName);
+		aes.init(Cipher.DECRYPT_MODE, key1);
+
+		CipherInputStream cis = new CipherInputStream(fis, aes);
+		int size = (int) fis.getChannel().size() - 16;
+		byte[] data = new byte[size];
+		cis.read(data, 0, size);
+		Log.d("jerry", "reading all data " + size);
+		String s = new String(data, "UTF-8");
+		cis.close();
+		fis.close();
+
+		return s;
+	}
+
+	private void writeTempFile(String fileName, String dataToWrite)
+			throws Exception {
+		FileOutputStream fos = new FileOutputStream(new File(fileName));
+		fos.write(dataToWrite.getBytes("UTF-8"));
+		fos.flush();
+		fos.close();
 	}
 }
