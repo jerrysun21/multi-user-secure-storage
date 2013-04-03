@@ -1,5 +1,7 @@
+AndroidManifest.xml
 gen/
 proguard.cfg
 bin/
 *.classpath
 project.properties
+

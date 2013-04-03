@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical" >
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        style="@style/CreateUserDialogText"
+        android:text="File name (*.txt):" />
+    
+    <EditText 
+        android:id="@+id/cf_file_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        style="@style/CreateUserDialogTextBox"
+        android:inputType="text"
+        />
+    
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        style="@style/CreateUserDialogText"
+        android:text="Content:" />
+    
+    <EditText
+        android:id="@+id/cf_data"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:lines="4"
+        android:singleLine="false"
+        android:scrollbars="vertical"
+        android:gravity="top|left"
+        />
+    
+        <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <Button
+            android:id="@+id/cf_OK"
+            android:layout_width="0px"
+            android:layout_weight="0.5"
+            android:layout_height="wrap_content"
+            android:text="OK" />
+        <Button
+            android:id="@+id/cf_Cancel"
+            android:layout_weight="0.5"
+            android:layout_width="0px"
+            android:layout_height="wrap_content"
+            android:text="Cancel" />
+    </LinearLayout>
+    
+</LinearLayout>
