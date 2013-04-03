@@ -182,21 +182,12 @@ public class UserFolderBrowser extends Activity {
 				EditText etFileName = (EditText)createFileDialog.findViewById(R.id.cf_file_name);
 				EditText etContent = (EditText)createFileDialog.findViewById(R.id.cf_data);
 				File currDir = adapter.getCurrentDir();
-				File newFile = new File(currDir, etFileName.getText().toString() + ".txt");
-				
+				File newFile = new File(currDir, etFileName.getText().toString() + ".txt.security");
 				try {
-					BufferedWriter writer = new BufferedWriter(new FileWriter(
-							newFile, true));
-					// Append and add '-' after each attribute
-					writer.append(etContent.getText().toString());
-					writer.newLine();
-					writer.close();
-					Log.d(currDir.getName(), "Created file: " + etFileName.getText().toString());
+					SecurityHelper.encryptFile(newFile.getAbsolutePath(), etContent.getText().toString(), password);
 					Toast.makeText(UserFolderBrowser.this, "Created file", Toast.LENGTH_SHORT).show();
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-					Log.d(currDir.getName(), "Error: " + e.getMessage());
+				} catch (Exception e1) {
+					e1.printStackTrace();
 				}
 				
 				refreshAdapter();
