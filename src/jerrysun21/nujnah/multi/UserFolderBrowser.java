@@ -27,6 +27,7 @@ public class UserFolderBrowser extends Activity {
 	TextView status;
 	ListView lv;
 	String password;
+	String username;
 	Context context;
 	Button btnAddUser;
 	Button btnAddDir;
@@ -62,6 +63,7 @@ public class UserFolderBrowser extends Activity {
 		if (data != null) {
 			strUserDir = data.getString("userdir");
 			password = data.getString("password");
+			username = data.getString("username");
 		}
 		UserDir = new File(strUserDir);
 
@@ -88,7 +90,12 @@ public class UserFolderBrowser extends Activity {
 					String s = new String(checksum, "UTF-8");
 					Log.d("jerry", "Checksum of all the files: " + s);
 					ArrayList<MultiUserInfo> users = MultiUserList.getInstance().users;
-					// TODO: save the checksum somewhere
+					for (MultiUserInfo user : users) {
+						if (user.getUserId().equals(username)) {
+							Log.d("jerry", "storing hash of: " + s);
+							user.setNFCToken(s);
+						}
+					}
 				} catch (UnsupportedEncodingException e) {
 					e.printStackTrace();
 				}

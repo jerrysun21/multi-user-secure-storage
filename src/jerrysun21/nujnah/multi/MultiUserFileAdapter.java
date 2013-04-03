@@ -220,6 +220,7 @@ public class MultiUserFileAdapter extends ArrayAdapter<File> {
 				if (MultiHelper.toSHA1(pw).equals(user.getPassword())) {
 
 					// Send password
+					data.putString("username", username);
 					data.putString("userdir", userdir.getAbsolutePath());
 					if (password != null) {
 						data.putString("password", password);
