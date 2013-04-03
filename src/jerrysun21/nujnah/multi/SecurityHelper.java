@@ -137,12 +137,12 @@ public class SecurityHelper {
 			} else if (temp.isFile()) {
 				String extension = temp.getName();
 				Log.d("jerry", "file name: " + extension);
-				if (extension.substring(extension.lastIndexOf('.')).equals(
-						".security")) {
+				if (extension.lastIndexOf('-') != -1 && extension.substring(extension.lastIndexOf('-')).equals(
+						"-sec.txt")) {
 					try {
 						String data = SecurityHelper.readFileData(temp);
 						String newFileName = temp.getAbsolutePath().substring(
-								0, temp.getAbsolutePath().lastIndexOf('.'));
+								0, temp.getAbsolutePath().lastIndexOf('-')) + ".txt";
 						Log.d("jerry", "Data: " + data + "\nName: "
 								+ newFileName + "\nPassword: " + password);
 						encryptFile(newFileName, data, password);

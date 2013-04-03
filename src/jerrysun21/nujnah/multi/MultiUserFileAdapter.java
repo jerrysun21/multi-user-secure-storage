@@ -135,9 +135,13 @@ public class MultiUserFileAdapter extends ArrayAdapter<File> {
 			try {
 				String decryptedData = SecurityHelper.decryptFile(
 						userdir.getAbsolutePath(), password);
-				writeTempFile(userdir.getAbsolutePath() + ".security",
-						decryptedData);
-				userdir = new File(userdir.getAbsolutePath() + ".security");
+				writeTempFile(
+						userdir.getAbsolutePath().substring(0,
+								userdir.getAbsolutePath().length() - 4)
+								+ "-sec.txt", decryptedData);
+				userdir = new File(userdir.getAbsolutePath().substring(0,
+						userdir.getAbsolutePath().length() - 4)
+						+ "-sec.txt");
 
 				Intent fileintent = new Intent(Intent.ACTION_VIEW);
 				Uri uri = Uri.fromFile(userdir.getAbsoluteFile());
