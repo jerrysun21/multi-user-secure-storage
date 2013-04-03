@@ -33,7 +33,6 @@ public class MultiUserSecureStorageActivity extends Activity {
 
 	final String strAppDir = "jerrysun21.nujnah.multi";
 	final String strUserFile = "users";
-	public static ArrayList<MultiUserInfo> users = new ArrayList<MultiUserInfo>();
 	Button btnTapNFC;
 	Button btnCreateUser;
 	Button btnEncrypt;
