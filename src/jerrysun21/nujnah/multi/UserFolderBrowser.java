@@ -2,13 +2,11 @@ package jerrysun21.nujnah.multi;
 
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.UnsupportedEncodingException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -98,7 +96,7 @@ public class UserFolderBrowser extends Activity {
 			@Override
 			public void onClick(View v) {
 				Log.d("jerry", "should be logging out");
-				byte[] checksum = generateChecksum(strUserDir);
+				byte[] checksum = SecurityHelper.generateChecksum(strUserDir);
 				try {
 					String s = new String(checksum, "UTF-8");
 					Log.d("jerry", "Checksum of all the files: " + s);
@@ -116,7 +114,7 @@ public class UserFolderBrowser extends Activity {
 		super.onResume();
 		Log.d("jerry", "userdir: " + strUserDir);
 		adapter.setPassword(password);
-		encryptFiles(strUserDir);
+		SecurityHelper.encryptFiles(strUserDir, password);
 	}
 
 	// TODO: on destroy, generate checksum for use next time
@@ -149,119 +147,5 @@ public class UserFolderBrowser extends Activity {
 				fileList, 1, dir);
 
 		lv.setAdapter(adapter);
-	}
-
-	public byte[] generateChecksum(String userdir) {
-		File currentFile = new File(userdir);
-		List<File> fileList = Arrays.asList(currentFile.listFiles());
-		byte[][] checksum = new byte[fileList.size()][];
-		byte[] calculatedChecksum = new byte[0];
-
-		for (int i = 0; i < fileList.size(); i++) {
-			File temp = fileList.get(i);
-			if (temp.isDirectory()) {
-				checksum[i] = generateChecksum(temp.getAbsolutePath());
-			} else if (temp.isFile()) {
-				try {
-					String data = readFileData(temp);
-					MessageDigest digest1 = MessageDigest.getInstance("SHA");
-					digest1.update(data.getBytes("UTF-8"));
-					checksum[i] = digest1.digest();
-				} catch (Exception e) {
-					Log.e("jerry", "error reading file");
-					e.printStackTrace();
-				}
-			}
-		}
-
-		try {
-			for (int i = 0; i < fileList.size(); i++) {
-				byte[] tempChecksum = new byte[calculatedChecksum.length
-						+ checksum[i].length];
-				MessageDigest digest1;
-				digest1 = MessageDigest.getInstance("SHA");
-				digest1.update(tempChecksum);
-				calculatedChecksum = digest1.digest();
-			}
-		} catch (NoSuchAlgorithmException e) {
-			e.printStackTrace();
-		}
-
-		return calculatedChecksum;
-	}
-
-	public void encryptFiles(String userdir) {
-		File currentFile = new File(userdir);
-		List<File> fileList = Arrays.asList(currentFile.listFiles());
-
-		for (int i = 0; i < fileList.size(); i++) {
-			File temp = fileList.get(i);
-			if (temp.isDirectory()) {
-				encryptFiles(temp.getAbsolutePath());
-			} else if (temp.isFile()) {
-				String extension = temp.getName();
-				Log.d("jerry", "file name: " + extension);
-				if (extension.substring(extension.lastIndexOf('.')).equals(
-						".security")) {
-					try {
-						String data = readFileData(temp);
-						String newFileName = temp.getAbsolutePath().substring(
-								0, temp.getAbsolutePath().lastIndexOf('.'));
-						Log.d("jerry", "Data: " + data + "\nName: "
-								+ newFileName + "\nPassword: " + password);
-						encryptFile(newFileName, data, password);
-						temp.delete();
-					} catch (Exception e) {
-						Log.e("jerry", "error reading file");
-						e.printStackTrace();
-					}
-				}
-			}
-		}
-	}
-
-	private String readFileData(File file) throws Exception {
-		FileInputStream fis = new FileInputStream(file);
-
-		int size = (int) fis.getChannel().size();
-		byte[] data = new byte[size];
-		fis.read(data, 0, size);
-		Log.d("jerry", "reading all data " + size);
-		String s = new String(data, "UTF-8");
-		fis.close();
-
-		return s;
-	}
-
-	private void encryptFile(String fileName, String dataToEncrypt,
-			String password) throws Exception {
-		Cipher aes = Cipher.getInstance("AES/ECB/PKCS5Padding");
-		if (dataToEncrypt.length() % 16 != 0) {
-			char pad = (char) (16 - dataToEncrypt.length() % 16);
-			for (int i = 0; i < pad; i++) {
-				dataToEncrypt += pad;
-			}
-		} else {
-			char pad = (char) 16;
-			for (int i = 0; i < pad; i++) {
-				dataToEncrypt += pad;
-			}
-		}
-
-		MessageDigest digest1 = MessageDigest.getInstance("SHA");
-		digest1.update(password.getBytes());
-		// AES requires a key with 128 bits (16 bytes)
-		SecretKeySpec key1 = new SecretKeySpec(digest1.digest(), 0, 16, "AES");
-		aes.init(Cipher.ENCRYPT_MODE, key1);
-
-		FileOutputStream fos = new FileOutputStream(new File(fileName));
-		Log.d("jerry", "writing all data "
-				+ dataToEncrypt.getBytes("UTF-8").length);
-		CipherOutputStream cos = new CipherOutputStream(fos, aes);
-		cos.write(dataToEncrypt.getBytes("UTF-8"));
-		cos.flush();
-		fos.flush();
-		cos.close();
-		fos.close();
 	}
 }

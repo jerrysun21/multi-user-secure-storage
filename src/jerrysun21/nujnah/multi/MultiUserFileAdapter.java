@@ -140,7 +140,7 @@ public class MultiUserFileAdapter extends ArrayAdapter<File> {
 			}
 		} else {
 			try {
-				String decryptedData = decryptFile(userdir.getAbsolutePath(),
+				String decryptedData = SecurityHelper.decryptFile(userdir.getAbsolutePath(),
 						password);
 				writeTempFile(userdir.getAbsolutePath() + ".security",
 						decryptedData);
@@ -170,29 +170,6 @@ public class MultiUserFileAdapter extends ArrayAdapter<File> {
 
 	public void setPassword(String password) {
 		this.password = password;
-	}
-
-	private String decryptFile(String fileName, String password)
-			throws Exception {
-		Cipher aes = Cipher.getInstance("AES/ECB/PKCS5Padding");
-		MessageDigest digest1 = MessageDigest.getInstance("SHA");
-		digest1.update(password.getBytes());
-		// AES requires a key with 128 bits (16 bytes)
-		SecretKeySpec key1 = new SecretKeySpec(digest1.digest(), 0, 16, "AES");
-
-		FileInputStream fis = new FileInputStream(fileName);
-		aes.init(Cipher.DECRYPT_MODE, key1);
-
-		CipherInputStream cis = new CipherInputStream(fis, aes);
-		int size = (int) fis.getChannel().size() - 16;
-		byte[] data = new byte[size];
-		cis.read(data, 0, size);
-		Log.d("jerry", "reading all data " + size);
-		String s = new String(data, "UTF-8");
-		cis.close();
-		fis.close();
-
-		return s;
 	}
 
 	private void writeTempFile(String fileName, String dataToWrite)

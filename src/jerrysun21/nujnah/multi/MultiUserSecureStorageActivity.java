@@ -80,11 +80,15 @@ public class MultiUserSecureStorageActivity extends Activity {
 			@Override
 			public void onItemClick(AdapterView<?> arg0, View arg1, int arg2,
 					long arg3) {
-				// TODO: prompt the user to type in their password, generate salted password to use for decryption etc
-				// TODO: if password typed is wrong, don't launch intent, say wrong password/NFC combination
+				// TODO: prompt the user to type in their password, generate
+				// salted password to use for decryption etc
+				// TODO: if password typed is wrong, don't launch intent, say
+				// wrong password/NFC combination
 				String item = ((TextView) arg1).getText().toString();
 				Bundle data = new Bundle();
-				Log.d("jerry", "==================================================\npassword being passed in " + password);
+				Log.d("jerry",
+						"==================================================\npassword being passed in "
+								+ password);
 				data.putString("password", password);
 				File userdir = getFile(item, appDir.listFiles());
 				if (userdir != null) {
@@ -183,8 +187,9 @@ public class MultiUserSecureStorageActivity extends Activity {
 				String dataToEncrypt = "asldkfjaw;eghaoiwebnaowieh091y2509r8q2y389tghawoibuv;boiwye98rthq23ngv9pa8w3hbnp9wun3f9a8wheg[a9ubnaw9[8hytr-9182hrtpi1faqwfdcig";
 
 				try {
-					encryptFile("hello", dataToEncrypt, password);
-					String s = decryptFile("hello", password);
+					SecurityHelper
+							.encryptFile("/sdcard/data/jerrysun21.nujnah.multi/hello", dataToEncrypt, password);
+					String s = SecurityHelper.decryptFile("/sdcard/data/jerrysun21.nujnah.multi/hello", password);
 
 					Log.d("jerry",
 							dataToEncrypt + "\t" + dataToEncrypt.length()
@@ -209,61 +214,6 @@ public class MultiUserSecureStorageActivity extends Activity {
 			if (fileList[i].getName().equals(directoryName))
 				return fileList[i];
 		return null;
-	}
-
-	private void encryptFile(String fileName, String dataToEncrypt,
-			String password) throws Exception {
-		Cipher aes = Cipher.getInstance("AES/ECB/PKCS5Padding");
-		if (dataToEncrypt.length() % 16 != 0) {
-			char pad = (char) (16 - dataToEncrypt.length() % 16);
-			for (int i = 0; i < pad; i++) {
-				dataToEncrypt += pad;
-			}
-		} else {
-			char pad = (char) 16;
-			for (int i = 0; i < pad; i++) {
-				dataToEncrypt += pad;
-			}
-		}
-
-		MessageDigest digest1 = MessageDigest.getInstance("SHA");
-		digest1.update(password.getBytes());
-		// AES requires a key with 128 bits (16 bytes)
-		SecretKeySpec key1 = new SecretKeySpec(digest1.digest(), 0, 16, "AES");
-		aes.init(Cipher.ENCRYPT_MODE, key1);
-
-		FileOutputStream fos = openFileOutput(fileName, MODE_PRIVATE);
-		Log.d("jerry", "writing all data "
-				+ dataToEncrypt.getBytes("UTF-8").length);
-		CipherOutputStream cos = new CipherOutputStream(fos, aes);
-		cos.write(dataToEncrypt.getBytes("UTF-8"));
-		cos.flush();
-		fos.flush();
-		cos.close();
-		fos.close();
-	}
-
-	private String decryptFile(String fileName, String password)
-			throws Exception {
-		Cipher aes = Cipher.getInstance("AES/ECB/PKCS5Padding");
-		MessageDigest digest1 = MessageDigest.getInstance("SHA");
-		digest1.update(password.getBytes());
-		// AES requires a key with 128 bits (16 bytes)
-		SecretKeySpec key1 = new SecretKeySpec(digest1.digest(), 0, 16, "AES");
-
-		FileInputStream fis = openFileInput(fileName);
-		aes.init(Cipher.DECRYPT_MODE, key1);
-
-		CipherInputStream cis = new CipherInputStream(fis, aes);
-		int size = (int) fis.getChannel().size() - 16;
-		byte[] data = new byte[size];
-		cis.read(data, 0, size);
-		Log.d("jerry", "reading all data " + size);
-		String s = new String(data, "UTF-8");
-		cis.close();
-		fis.close();
-
-		return s;
 	}
 
 	// Probably move this into another thread, would get slow once there are a
