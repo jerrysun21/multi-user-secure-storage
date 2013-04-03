@@ -50,6 +50,7 @@ public class MultiUserSecureStorageActivity extends Activity {
 	ListView lv;
 	File appDir;
 	String nfcData;
+	String password;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -85,6 +86,7 @@ public class MultiUserSecureStorageActivity extends Activity {
 				File userdir = getFile(item, appDir.listFiles());
 				if (userdir != null) {
 					data.putString("userdir", userdir.getAbsolutePath());
+					data.putString("password", password);
 					Intent intent = new Intent(
 							MultiUserSecureStorageActivity.this,
 							UserFolderBrowser.class);
@@ -169,7 +171,7 @@ public class MultiUserSecureStorageActivity extends Activity {
 
 			@Override
 			public void onClick(View v) {
-				String password = "password";
+				password = "password";
 				password += nfcData;
 				password += Secure.getString(getBaseContext()
 						.getContentResolver(), Secure.ANDROID_ID);
