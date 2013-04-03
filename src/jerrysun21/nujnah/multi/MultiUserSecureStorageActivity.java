@@ -360,6 +360,7 @@ public class MultiUserSecureStorageActivity extends Activity {
 				password.indexOf('Q', password.indexOf("jerry://")));
 		tvMainText.setText(password);
 		nfcData = password;
+		Log.d("NFC", "NFC msg received: " + nfcData);
 	}
 
 }

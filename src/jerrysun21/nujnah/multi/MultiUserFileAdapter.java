@@ -64,7 +64,7 @@ public class MultiUserFileAdapter extends ArrayAdapter<File> {
 		tv.setText(list.get(position).getName());
 
 		File currentFile = list.get(position);
-
+		Log.d("adapter", "Item: " + currentFile.getName() + " Is directory: " + currentFile.isDirectory());
 		if (currentFile.isDirectory())
 			tv.setTypeface(Typeface.DEFAULT_BOLD);
 		else

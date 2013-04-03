@@ -2,28 +2,24 @@ package jerrysun21.nujnah.multi;
 
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileOutputStream;
+import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.security.MessageDigest;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
-import javax.crypto.Cipher;
-import javax.crypto.CipherOutputStream;
-import javax.crypto.spec.SecretKeySpec;
 
 import android.app.Activity;
+import android.app.Dialog;
 import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class UserFolderBrowser extends Activity {
 	File UserDir;
@@ -34,6 +30,7 @@ public class UserFolderBrowser extends Activity {
 	String password;
 	Context context;
 	Button btnAddUser;
+	Button btnAddDir;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -44,31 +41,22 @@ public class UserFolderBrowser extends Activity {
 		status = (TextView) findViewById(R.id.ufb_status_text);
 		lv = (ListView) findViewById(R.id.ufb_file_list);
 		btnAddUser = (Button) findViewById(R.id.ufb_add_file);
+		btnAddDir = (Button) findViewById(R.id.ufb_add_dir);
 
 		btnAddUser.setOnClickListener(new OnClickListener() {
 
 			@Override
 			public void onClick(View v) {
-				File current = adapter.getCurrentDir();
-				File userList = new File(adapter.getCurrentDir(), Integer
-						.toString(adapter.getCurrentDir().listFiles().length)
-						+ ".txt");
-				try {
-					BufferedWriter writer = new BufferedWriter(new FileWriter(
-							userList, true));
-					// Append and add '-' after each attribute
-					writer.append("junk data junk data junk data junk data junk data junk data junk data junk data");
-					writer.newLine();
-					writer.close();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-
-				adapter.clear();
-				File[] files = current.listFiles();
-				for (int i = 0; i < files.length; i++)
-					adapter.add(files[i]);
-				adapter.notifyDataSetChanged();
+				createFile();
+			}
+		});
+		
+		btnAddDir.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				// TODO Auto-generated method stub
+				//createDirectory();
 			}
 		});
 
@@ -107,8 +95,30 @@ public class UserFolderBrowser extends Activity {
 				finish();
 			}
 		});
+		refreshAdapter();
 	}
-
+	
+	private void refreshAdapter() {
+		File[] fileList = adapter.getCurrentDir().listFiles();
+		
+		
+		ArrayList<File> files = new ArrayList<File>();
+		ArrayList<File> dirs = new ArrayList<File>();
+		
+		for (int i = 0; i < fileList.length; i++) {
+			if (fileList[i].isDirectory())
+				dirs.add(fileList[i]);
+			else
+				files.add(fileList[i]);
+		}
+		
+		adapter.clear();
+		adapter.add(adapter.getCurrentDir().getParentFile());
+		adapter.addAll(dirs);
+		adapter.addAll(files);
+		adapter.notifyDataSetChanged();
+	}
+	
 	@Override
 	protected void onResume() {
 		super.onResume();
@@ -147,5 +157,108 @@ public class UserFolderBrowser extends Activity {
 				fileList, 1, dir);
 
 		lv.setAdapter(adapter);
+	}
+
+	private String readFileData(File file) throws Exception {
+		FileInputStream fis = new FileInputStream(file);
+
+		int size = (int) fis.getChannel().size();
+		byte[] data = new byte[size];
+		fis.read(data, 0, size);
+		Log.d("jerry", "reading all data " + size);
+		String s = new String(data, "UTF-8");
+		fis.close();
+
+		return s;
+	}
+
+	
+	private void createFile() {
+		final Dialog createFileDialog = new Dialog(this);
+		Button btnOk;
+		Button btnCancel;
+		
+		createFileDialog.setTitle("Create a new file");
+		createFileDialog.setContentView(R.layout.dialog_create_file);
+		
+		btnOk = (Button)createFileDialog.findViewById(R.id.cf_OK);
+		btnCancel = (Button)createFileDialog.findViewById(R.id.cf_Cancel);
+		
+		btnOk.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				EditText etFileName = (EditText)createFileDialog.findViewById(R.id.cf_file_name);
+				EditText etContent = (EditText)createFileDialog.findViewById(R.id.cf_data);
+				File currDir = adapter.getCurrentDir();
+				File newFile = new File(currDir, etFileName.getText().toString() + ".txt");
+				
+				try {
+					BufferedWriter writer = new BufferedWriter(new FileWriter(
+							newFile, true));
+					// Append and add '-' after each attribute
+					writer.append(etContent.getText().toString());
+					writer.newLine();
+					writer.close();
+					Log.d(currDir.getName(), "Created file: " + etFileName.getText().toString());
+					Toast.makeText(UserFolderBrowser.this, "Created file", Toast.LENGTH_SHORT).show();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+					Log.d(currDir.getName(), "Error: " + e.getMessage());
+				}
+				
+				refreshAdapter();
+				createFileDialog.dismiss();
+			}
+		});
+		
+		btnCancel.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				createFileDialog.dismiss();
+			}
+		});
+		
+		createFileDialog.show();
+	}
+	
+	private void createDirectory() {
+		final Dialog createDirDialog = new Dialog(this);
+		Button btnOK;
+		Button btnCancel;
+		
+		createDirDialog.setTitle("Create Directory");
+		createDirDialog.setContentView(R.layout.dialog_create_dir);
+		
+		btnOK = (Button)createDirDialog.findViewById(R.id.cd_OK);
+		btnCancel = (Button)createDirDialog.findViewById(R.id.cd_Cancel);
+		
+		btnOK.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				EditText etDirName = (EditText)createDirDialog.findViewById(R.id.cd_name);
+				File newFolder = new File(adapter.getCurrentDir(), etDirName.getText().toString());
+				
+				newFolder.mkdir();
+				Log.d(adapter.getCurrentDir().getName(), "Create directory: " + newFolder.getName());
+				
+				refreshAdapter();
+				createDirDialog.dismiss();
+			}
+		});
+		
+		btnCancel.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				createDirDialog.dismiss();
+				
+			}
+		});
+		
+		createDirDialog.show();
 	}
 }
