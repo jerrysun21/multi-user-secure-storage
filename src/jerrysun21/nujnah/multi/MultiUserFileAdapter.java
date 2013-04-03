@@ -2,6 +2,7 @@ package jerrysun21.nujnah.multi;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -225,15 +226,32 @@ public class MultiUserFileAdapter extends ArrayAdapter<File> {
 				Log.d("jerry", "password entred: " + MultiHelper.toSHA1(pw));
 
 				if (MultiHelper.toSHA1(pw).equals(user.getRawPassword())) {
+					
+					byte[] checksum = SecurityHelper.generateChecksum(userdir.getAbsolutePath());
+					String s = "";
+					try {
+						s = new String(checksum, "UTF-8");
+					} catch (UnsupportedEncodingException e) {
+						e.printStackTrace();
+					}
+					Log.d("jerry", "Checksum of all the files: " + s);
+					Log.d("jerry", "Checksum stored in the db: " + user.getNFCToken());
+					if (user.getNFCToken().equals("NFC") || s.equals(user.getNFCToken())) {
+						Log.d("jerry", "this works");
+						// Send password
+						data.putString("username", username);
+						data.putString("userdir", userdir.getAbsolutePath());
+						data.putString("password", pw);
+						
+						Intent intent = new Intent(context, UserFolderBrowser.class);
+						intent.putExtras(data);
+						context.startActivity(intent);
+					} else {
+						Toast.makeText(activity, "Files have been tampered with",
+								Toast.LENGTH_SHORT).show();
+						loginDialog.dismiss();
+					}
 
-					// Send password
-					data.putString("username", username);
-					data.putString("userdir", userdir.getAbsolutePath());
-					data.putString("password", pw);
-
-					Intent intent = new Intent(context, UserFolderBrowser.class);
-					intent.putExtras(data);
-					context.startActivity(intent);
 				} else {
 					Toast.makeText(activity, "Incorrect credentials",
 							Toast.LENGTH_SHORT).show();
