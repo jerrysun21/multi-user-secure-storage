@@ -40,7 +40,6 @@ public class MultiUserSecureStorageActivity extends Activity {
 	MultiUserFileAdapter adapter;
 	ListView lv;
 	File appDir;
-	public static String nfcData;
 	String password;
 
 	@Override
@@ -169,7 +168,7 @@ public class MultiUserSecureStorageActivity extends Activity {
 
 			@Override
 			public void onClick(View v) {
-				password = SecurityHelper.setPassword("password", nfcData,
+				password = SecurityHelper.setPassword("password", MultiUserList.getInstance().nfcData,
 						getBaseContext());
 				adapter.setPassword(password);
 
@@ -253,7 +252,7 @@ public class MultiUserSecureStorageActivity extends Activity {
 
 			@Override
 			public void onClick(View v) {
-				if (nfcData != null) {
+				if (MultiUserList.getInstance().nfcData != null) {
 					String username = usernameEdit.getText().toString();
 					// Need to verify password length/strength
 					String password = password = SecurityHelper.setPassword(
@@ -360,8 +359,8 @@ public class MultiUserSecureStorageActivity extends Activity {
 		password = password.substring(password.indexOf("jerry://") + 8,
 				password.indexOf('Q', password.indexOf("jerry://")));
 		tvMainText.setText(password);
-		nfcData = password;
-		Log.d("NFC", "NFC msg received: " + nfcData);
+		MultiUserList.getInstance().nfcData = password;
+		Log.d("NFC", "NFC msg received: " + MultiUserList.getInstance().nfcData);
 	}
 
 }

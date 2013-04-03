@@ -9,6 +9,7 @@ import java.util.ArrayList;
 public class MultiUserList {
 	
 	public ArrayList<MultiUserInfo> users = new ArrayList<MultiUserInfo>();
+	public String nfcData;
 	
 	private static MultiUserList instance;
 	

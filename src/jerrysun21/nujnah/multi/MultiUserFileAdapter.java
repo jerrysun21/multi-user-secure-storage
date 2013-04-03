@@ -203,7 +203,7 @@ public class MultiUserFileAdapter extends ArrayAdapter<File> {
 				String pw = etPassword.getText().toString();
 				Bundle data = new Bundle();
 
-				pw += MultiUserSecureStorageActivity.nfcData;
+				pw += MultiUserList.getInstance().nfcData;
 				pw += Secure.getString(activity.getBaseContext()
 						.getContentResolver(), Secure.ANDROID_ID);
 				boolean validated = false;

@@ -87,6 +87,7 @@ public class UserFolderBrowser extends Activity {
 				try {
 					String s = new String(checksum, "UTF-8");
 					Log.d("jerry", "Checksum of all the files: " + s);
+					ArrayList<MultiUserInfo> users = MultiUserList.getInstance().users;
 					// TODO: save the checksum somewhere
 				} catch (UnsupportedEncodingException e) {
 					e.printStackTrace();
@@ -125,8 +126,6 @@ public class UserFolderBrowser extends Activity {
 		adapter.setPassword(password);
 		SecurityHelper.encryptFiles(strUserDir, password);
 	}
-
-	// TODO: on destroy, generate checksum for use next time
 
 	@Override
 	public void onBackPressed() {
