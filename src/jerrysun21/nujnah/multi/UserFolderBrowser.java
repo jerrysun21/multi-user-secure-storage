@@ -37,18 +37,18 @@ public class UserFolderBrowser extends Activity {
 
 		if (data != null) {
 			strUserDir = data.getString("userdir");
+			password = data.getString("password");
 		}
 		UserDir = new File(strUserDir);
 
+		// TODO: generate a checksum for all the files in the user's directory. If it matches then show
 		if (UserDir.listFiles().length > 0) {
 			status.setVisibility(View.GONE);
 		} else {
 			status.setVisibility(View.VISIBLE);
 			status.setText("Empty Folder");
 		}
-
-		password = "blahblahblah";
-
+		
 		showFileList(UserDir);
 	}
 
@@ -59,6 +59,8 @@ public class UserFolderBrowser extends Activity {
 		adapter.setPassword(password);
 		encryptFiles(strUserDir);
 	}
+	
+	// TODO: on destroy, generate checksum for use next time
 
 	private ArrayList<File> populateFileList(File dir) {
 		if (!dir.isDirectory()) {

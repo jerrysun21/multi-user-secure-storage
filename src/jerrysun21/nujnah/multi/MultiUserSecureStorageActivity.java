@@ -80,7 +80,8 @@ public class MultiUserSecureStorageActivity extends Activity {
 			@Override
 			public void onItemClick(AdapterView<?> arg0, View arg1, int arg2,
 					long arg3) {
-				// TODO Auto-generated method stub
+				// TODO: prompt the user to type in their password, generate salted password to use for decryption etc
+				// TODO: if password typed is wrong, don't launch intent, say wrong password/NFC combination
 				String item = ((TextView) arg1).getText().toString();
 				Bundle data = new Bundle();
 				File userdir = getFile(item, appDir.listFiles());
