@@ -34,19 +34,22 @@ public class MultiUserFileAdapter extends ArrayAdapter<File> {
 	private int lvResource;
 	private int type;
 	private String password;
+	private File CurrentDir;
 
 	public MultiUserFileAdapter(Context context, int textViewResourceId,
 			List<File> objects) {
-		this(context, textViewResourceId, objects, 0);
+		this(context, textViewResourceId, objects, 0, null);
 	}
+	
 
 	public MultiUserFileAdapter(Context context, int textViewResourceId,
-			List<File> objects, int type) {
+			List<File> objects, int type, File CurrentDir) {
 		super(context, textViewResourceId, objects);
 		this.context = context;
 		this.list = objects;
 		this.lvResource = textViewResourceId;
 		this.type = type;
+		this.CurrentDir = CurrentDir;
 	}
 
 	@Override
@@ -129,6 +132,7 @@ public class MultiUserFileAdapter extends ArrayAdapter<File> {
 					}
 					list = newFiles;
 					notifyDataSetChanged();
+					CurrentDir = userdir;
 				}
 			}
 		} else {
@@ -193,5 +197,9 @@ public class MultiUserFileAdapter extends ArrayAdapter<File> {
 		fos.write(dataToWrite.getBytes("UTF-8"));
 		fos.flush();
 		fos.close();
+	}
+	
+	public File getCurrentDir() {
+		return CurrentDir;
 	}
 }

@@ -1,9 +1,12 @@
 package jerrysun21.nujnah.multi;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.security.MessageDigest;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -16,6 +19,8 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -26,6 +31,7 @@ public class UserFolderBrowser extends Activity {
 	TextView status;
 	ListView lv;
 	String password;
+	Button btnAddUser;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -34,6 +40,34 @@ public class UserFolderBrowser extends Activity {
 		Bundle data = getIntent().getExtras();
 		status = (TextView) findViewById(R.id.ufb_status_text);
 		lv = (ListView) findViewById(R.id.ufb_file_list);
+		btnAddUser = (Button) findViewById(R.id.ufb_add_file);
+
+		btnAddUser.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				File current = adapter.getCurrentDir();
+				File userList = new File(adapter.getCurrentDir(), Integer.toString(adapter.getCurrentDir().listFiles().length) + ".txt");
+				try {
+					BufferedWriter writer = new BufferedWriter(new FileWriter(
+							userList, true));
+					// Append and add '-' after each attribute
+					writer.append("junk data junk data junk data junk data junk data junk data junk data junk data");
+					writer.newLine();
+					writer.close();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				
+				adapter.clear();
+				File[] files = current.listFiles();
+				for (int i = 0; i < files.length; i++)
+					adapter.add(files[i]);
+				adapter.notifyDataSetChanged();
+			}
+		});
+		
 
 		if (data != null) {
 			strUserDir = data.getString("userdir");
@@ -42,13 +76,14 @@ public class UserFolderBrowser extends Activity {
 		UserDir = new File(strUserDir);
 
 		// TODO: generate a checksum for all the files in the user's directory. If it matches then show
+
 		if (UserDir.listFiles().length > 0) {
 			status.setVisibility(View.GONE);
 		} else {
 			status.setVisibility(View.VISIBLE);
 			status.setText("Empty Folder");
 		}
-		
+
 		showFileList(UserDir);
 	}
 
@@ -82,7 +117,8 @@ public class UserFolderBrowser extends Activity {
 
 		ArrayList<File> fileList = populateFileList(dir);
 		adapter = new MultiUserFileAdapter(this, R.layout.folder_list_item,
-				fileList, 1);
+				fileList, 1, dir);
+
 		lv.setAdapter(adapter);
 	}
 
