@@ -3,6 +3,7 @@ package jerrysun21.nujnah.multi;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
@@ -18,7 +19,7 @@ import android.provider.Settings.Secure;
 import android.util.Log;
 
 public class SecurityHelper {
-	
+
 	public static byte[] generateChecksum(String userdir) {
 		File currentFile = new File(userdir);
 		List<File> fileList = Arrays.asList(currentFile.listFiles());
@@ -27,14 +28,21 @@ public class SecurityHelper {
 
 		for (int i = 0; i < fileList.size(); i++) {
 			File temp = fileList.get(i);
+			Log.d("jerry", "Computing hash for file: " + temp.getAbsolutePath());
 			if (temp.isDirectory()) {
+				Log.d("jerry",
+						"This is a directory, going into subdirectory "
+								+ "\n============================================================");
 				checksum[i] = generateChecksum(temp.getAbsolutePath());
 			} else if (temp.isFile()) {
 				try {
 					String data = readFileData(temp);
+					Log.d("jerry", "The data in the file: " + data);
 					MessageDigest digest1 = MessageDigest.getInstance("SHA");
 					digest1.update(data.getBytes("UTF-8"));
 					checksum[i] = digest1.digest();
+					String checksumString = new String(checksum[i], "UTF-8");
+					Log.d("jerry", "The checksum of file: " + checksumString);
 				} catch (Exception e) {
 					Log.e("jerry", "error reading file");
 					e.printStackTrace();
@@ -42,14 +50,33 @@ public class SecurityHelper {
 			}
 		}
 
+		Log.d("jerry", "Time to combine all the hashes");
 		try {
 			for (int i = 0; i < fileList.size(); i++) {
 				byte[] tempChecksum = new byte[calculatedChecksum.length
 						+ checksum[i].length];
+				Log.d("jerry", "Length of calculatedChecksum so far: " + calculatedChecksum.length);
+				Log.d("jerry", "Length of current   checksum so far: " + checksum[i].length);
+				
+				for (int j = 0; j < calculatedChecksum.length; j++) {
+					tempChecksum[j] = calculatedChecksum[j];
+				}
+				int offset = calculatedChecksum.length;
+				for (int j = offset; j < tempChecksum.length; j++) {
+					tempChecksum[j] = checksum[i][j - offset];
+				}
+				
 				MessageDigest digest1;
 				digest1 = MessageDigest.getInstance("SHA");
 				digest1.update(tempChecksum);
 				calculatedChecksum = digest1.digest();
+				try {
+					String cCString;
+					cCString = new String(calculatedChecksum, "UTF-8");
+					Log.d("jerry", "Current hash: " + cCString);
+				} catch (UnsupportedEncodingException e) {
+					e.printStackTrace();
+				}
 			}
 		} catch (NoSuchAlgorithmException e) {
 			e.printStackTrace();
@@ -57,7 +84,7 @@ public class SecurityHelper {
 
 		return calculatedChecksum;
 	}
-	
+
 	public static String readFileData(File file) throws Exception {
 		FileInputStream fis = new FileInputStream(file);
 
@@ -70,7 +97,7 @@ public class SecurityHelper {
 
 		return s;
 	}
-	
+
 	public static String decryptFile(String fileName, String password)
 			throws Exception {
 		Cipher aes = Cipher.getInstance("AES/ECB/PKCS5Padding");
@@ -93,7 +120,7 @@ public class SecurityHelper {
 
 		return s;
 	}
-	
+
 	public static void encryptFile(String fileName, String dataToEncrypt,
 			String password) throws Exception {
 		Cipher aes = Cipher.getInstance("AES/ECB/PKCS5Padding");
@@ -125,7 +152,7 @@ public class SecurityHelper {
 		cos.close();
 		fos.close();
 	}
-	
+
 	public static void encryptFiles(String userdir, String password) {
 		File currentFile = new File(userdir);
 		List<File> fileList = Arrays.asList(currentFile.listFiles());
@@ -137,12 +164,14 @@ public class SecurityHelper {
 			} else if (temp.isFile()) {
 				String extension = temp.getName();
 				Log.d("jerry", "file name: " + extension);
-				if (extension.lastIndexOf('-') != -1 && extension.substring(extension.lastIndexOf('-')).equals(
-						"-sec.txt")) {
+				if (extension.lastIndexOf('-') != -1
+						&& extension.substring(extension.lastIndexOf('-'))
+								.equals("-sec.txt")) {
 					try {
 						String data = SecurityHelper.readFileData(temp);
 						String newFileName = temp.getAbsolutePath().substring(
-								0, temp.getAbsolutePath().lastIndexOf('-')) + ".txt";
+								0, temp.getAbsolutePath().lastIndexOf('-'))
+								+ ".txt";
 						Log.d("jerry", "Data: " + data + "\nName: "
 								+ newFileName + "\nPassword: " + password);
 						encryptFile(newFileName, data, password);
@@ -155,12 +184,13 @@ public class SecurityHelper {
 			}
 		}
 	}
-	
-	public static String setPassword(String user, String nfcData, Context context) {
+
+	public static String setPassword(String user, String nfcData,
+			Context context) {
 		String password = user;
 		password += MultiUserList.getInstance().nfcData;
-		password += Secure.getString(context
-				.getContentResolver(), Secure.ANDROID_ID);
+		password += Secure.getString(context.getContentResolver(),
+				Secure.ANDROID_ID);
 		Log.d("jerry", "password is " + password);
 		return password;
 	}
