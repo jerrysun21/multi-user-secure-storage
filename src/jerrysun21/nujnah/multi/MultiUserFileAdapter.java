@@ -252,16 +252,6 @@ public class MultiUserFileAdapter extends ArrayAdapter<File> {
 								Toast.LENGTH_SHORT).show();
 						loginDialog.dismiss();
 					}
-					// Send password
-					data.putString("username", username);
-					data.putString("userdir", userdir.getAbsolutePath());
-					data.putString("password", pw);
-					
-					loginDialog.dismiss();
-					
-					Intent intent = new Intent(context, UserFolderBrowser.class);
-					intent.putExtras(data);
-					context.startActivity(intent);
 				} else {
 					Toast.makeText(activity, "Incorrect credentials",
 							Toast.LENGTH_SHORT).show();
