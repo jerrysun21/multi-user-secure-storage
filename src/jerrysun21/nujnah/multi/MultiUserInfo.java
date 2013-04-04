@@ -1,6 +1,5 @@
 package jerrysun21.nujnah.multi;
 
-import android.util.Log;
 
 public class MultiUserInfo {
 	private String userId;

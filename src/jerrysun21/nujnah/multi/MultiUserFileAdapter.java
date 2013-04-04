@@ -91,7 +91,6 @@ public class MultiUserFileAdapter extends ArrayAdapter<File> {
 
 	private void clickFile(String item) {
 		File userdir = null;
-		Bundle data = new Bundle();
 		Boolean isDir = true;
 
 		for (int i = 0; i < list.size(); i++) {
