@@ -221,11 +221,6 @@ public class MultiUserFileAdapter extends ArrayAdapter<File> {
 						user = users.get(i);
 				}
 
-				Log.d("login", "password: " + pw);
-				Log.d("jerry", "password rawwed: " + pw);
-				Log.d("jerry", "password hashed: " + user.getPassword());
-				Log.d("jerry", "password entred: " + MultiHelper.toSHA1(pw));
-
 				if (MultiHelper.toSHA1(pw).equals(user.getRawPassword())) {
 					
 					byte[] checksum = SecurityHelper.generateChecksum(userdir.getAbsolutePath());
@@ -244,6 +239,7 @@ public class MultiUserFileAdapter extends ArrayAdapter<File> {
 						data.putString("userdir", userdir.getAbsolutePath());
 						data.putString("password", pw);
 						
+						loginDialog.dismiss();
 						Intent intent = new Intent(context, UserFolderBrowser.class);
 						intent.putExtras(data);
 						context.startActivity(intent);
